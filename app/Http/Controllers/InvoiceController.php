@@ -462,7 +462,7 @@ class InvoiceController extends Controller
             // Watermark Logo setup
             $logo = public_path('images/logo.png');
             if (file_exists($logo)) {
-                $mpdf->SetWatermarkImage($logo, 0.05, [120, 80], [45, 100]);
+                $mpdf->SetWatermarkImage($logo, 0.06, [120, 80], [45, 100]);
                 $mpdf->showWatermarkImage = true;
                 $mpdf->watermarkImgBehind = true;
             }

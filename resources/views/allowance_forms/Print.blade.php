@@ -7,7 +7,7 @@
         /* Page Setup for A4 Landscape */
         @page {
             size: A4 landscape;
-            margin: 2mm 6mm 4mm 6mm;
+            margin: 4mm 6mm 4mm 6mm;
         }
 
         body {
@@ -446,7 +446,7 @@
 
                                 <td rowspan="6" class="text-left font-14 solid-border">
                                     @if ($participant)
-                                        <div style="font-weight:bold;">
+                                        <div>
                                             {{ $participant->province ?: '-' }}
                                         </div>
 

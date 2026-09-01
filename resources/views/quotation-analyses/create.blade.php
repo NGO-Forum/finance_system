@@ -451,8 +451,10 @@
 
                         </label>
 
-                        <input id="recommended_supplier" type="text" readonly
-                            class="w-full rounded-xl bg-green-50 border-green-300 text-green-700 font-bold">
+                        <select name="recommended_supplier" id="recommended_supplier" required
+                            class="w-full rounded-xl border-green-300 focus:border-green-500 focus:ring-green-500 font-bold">
+                            <option value="">Select Recommended Supplier</option>
+                        </select>
 
                     </div>
 
@@ -674,469 +676,964 @@
     </div>
 
     <script>
-        const criteria = @json($criteria);
+        document.addEventListener('DOMContentLoaded', function() {
 
-        const supplierTable = document.querySelector('#supplierTable tbody');
+            /* ============================================================
+               DATA
+            ============================================================ */
 
-        /*=====================================================
-            =            SUPPLIER SECTION
-            =====================================================*/
+            const criteria = @json($criteria);
 
-        document.getElementById('addSupplier').addEventListener('click', function() {
+            const supplierTable = document.querySelector('#supplierTable tbody');
+            const evaluationTable = document.getElementById('evaluationTable');
+            const recommendedSupplier = document.getElementById('recommended_supplier');
+            const highestScore = document.getElementById('highest_score');
+            const committeeBody = document.querySelector('#committeeTable tbody');
 
-            let row = supplierTable.rows[0].cloneNode(true);
 
-            row.querySelectorAll('input').forEach(input => {
+            /* ============================================================
+               SAFE HTML
+            ============================================================ */
 
-                input.value = '';
+            function escapeHtml(value) {
+                return String(value ?? '')
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#039;');
+            }
 
-            });
 
-            supplierTable.appendChild(row);
+            /* ============================================================
+               SUPPLIERS
+            ============================================================ */
 
-            updateSupplierNumber();
+            function getSuppliers() {
 
-            buildEvaluationTable();
+                if (!supplierTable) {
+                    return [];
+                }
 
-        });
+                return Array.from(
+                    supplierTable.querySelectorAll('.supplier-row')
+                );
+            }
 
-        supplierTable.addEventListener('click', function(e) {
 
-            if (e.target.closest('.removeSupplier')) {
+            function updateSupplierNumber() {
 
-                if (supplierTable.rows.length > 1) {
+                getSuppliers().forEach(function(row, index) {
 
-                    e.target.closest('tr').remove();
+                    const number = row.querySelector('.supplier-no');
+
+                    if (number) {
+                        number.textContent = index + 1;
+                    }
+
+                });
+            }
+
+
+            /* ============================================================
+               GET SCORE FOR ONE SUPPLIER
+            ============================================================ */
+
+            function getSupplierScore(index) {
+
+                let total = 0;
+
+                const scores = document.querySelectorAll(
+                    `select.score[data-supplier-index="${index}"]`
+                );
+
+                scores.forEach(function(select) {
+
+                    const value = parseInt(select.value, 10);
+
+                    if (!isNaN(value)) {
+                        total += value;
+                    }
+
+                });
+
+                return total;
+            }
+
+
+            /* ============================================================
+               CALCULATE ALL SUPPLIER TOTALS
+            ============================================================ */
+
+            function calculateTotals() {
+
+                const suppliers = getSuppliers();
+
+                suppliers.forEach(function(row, index) {
+
+                    const total = getSupplierScore(index);
+
+                    const totalCell =
+                        document.getElementById(`total${index}`);
+
+                    if (totalCell) {
+                        totalCell.textContent = total;
+                    }
+
+                });
+
+                updateSelectedSupplierScore();
+            }
+
+
+            /* ============================================================
+               RECOMMENDED SUPPLIER DROPDOWN
+               USER MUST SELECT IT
+            ============================================================ */
+
+            function updateRecommendedSupplier(
+                preserveValue = true
+            ) {
+
+                if (!recommendedSupplier) {
+                    return;
+                }
+
+                const oldValue = preserveValue ?
+                    recommendedSupplier.value :
+                    '';
+
+                recommendedSupplier.innerHTML = `
+            <option value="">
+                Select Recommended Supplier
+            </option>
+        `;
+
+                getSuppliers().forEach(function(row, index) {
+
+                    const input =
+                        row.querySelector('.supplier-name');
+
+                    const name =
+                        input?.value.trim();
+
+                    if (!name) {
+                        return;
+                    }
+
+                    const option =
+                        document.createElement('option');
+
+                    /*
+                     * IMPORTANT
+                     *
+                     * Value is supplier number.
+                     *
+                     * Supplier 1 = 1
+                     * Supplier 2 = 2
+                     * Supplier 3 = 3
+                     */
+
+                    option.value = index + 1;
+
+                    option.textContent =
+                        `Supplier ${index + 1} - ${name}`;
+
+                    recommendedSupplier.appendChild(option);
+
+                });
+
+
+                /* Restore previous selection */
+
+                if (
+                    oldValue &&
+                    Array.from(
+                        recommendedSupplier.options
+                    ).some(function(option) {
+
+                        return option.value === oldValue;
+
+                    })
+                ) {
+
+                    recommendedSupplier.value = oldValue;
+
+                }
+
+                updateSelectedSupplierScore();
+            }
+
+
+            /* ============================================================
+               SHOW SCORE OF SELECTED RECOMMENDED SUPPLIER
+            ============================================================ */
+
+            function updateSelectedSupplierScore() {
+
+                if (!highestScore) {
+                    return;
+                }
+
+                const selectedValue =
+                    recommendedSupplier?.value;
+
+                if (!selectedValue) {
+
+                    highestScore.value = '';
+
+                    return;
+                }
+
+                const selectedIndex =
+                    parseInt(selectedValue, 10) - 1;
+
+                if (
+                    selectedIndex < 0 ||
+                    !getSuppliers()[selectedIndex]
+                ) {
+
+                    highestScore.value = '';
+
+                    return;
+                }
+
+                const score =
+                    getSupplierScore(selectedIndex);
+
+                highestScore.value = score;
+            }
+
+
+            /* ============================================================
+               BUILD EVALUATION TABLE
+            ============================================================ */
+
+            function buildEvaluationTable() {
+
+                if (!evaluationTable) {
+                    return;
+                }
+
+                const thead =
+                    evaluationTable.querySelector('thead');
+
+                const tbody =
+                    evaluationTable.querySelector('tbody');
+
+                const tfoot =
+                    evaluationTable.querySelector('tfoot');
+
+                if (!thead || !tbody || !tfoot) {
+                    return;
+                }
+
+                const suppliers = getSuppliers();
+
+
+                /* ========================================================
+                   HEADER
+                ======================================================== */
+
+                let header = `
+            <tr class="bg-green-600 text-white">
+
+                <th
+                    rowspan="2"
+                    class="border px-4 py-3 text-left"
+                >
+                    Criteria
+                </th>
+        `;
+
+                suppliers.forEach(function(row, index) {
+
+                    const name =
+                        row.querySelector('.supplier-name')
+                        ?.value.trim() ||
+                        `Supplier ${index + 1}`;
+
+                    header += `
+                <th
+                    colspan="2"
+                    class="border px-4 py-3 text-center"
+                >
+                    Supplier ${index + 1}
+                    <br>
+                    <span class="font-normal">
+                        ${escapeHtml(name)}
+                    </span>
+                </th>
+            `;
+
+                });
+
+                header += `
+            </tr>
+
+            <tr class="bg-green-600 text-white">
+        `;
+
+                suppliers.forEach(function() {
+
+                    header += `
+                <th class="border px-3 py-2">
+                    Description
+                </th>
+
+                <th class="border px-3 py-2 w-24">
+                    Score
+                </th>
+            `;
+
+                });
+
+                header += `
+            </tr>
+        `;
+
+                thead.innerHTML = header;
+
+
+                /* ========================================================
+                   BODY
+                ======================================================== */
+
+                let body = '';
+
+                criteria.forEach(function(criterion) {
+
+                    body += `
+                <tr>
+
+                    <td
+                        class="border px-4 py-3
+                               font-semibold
+                               bg-gray-50"
+                    >
+                        ${escapeHtml(criterion.name)}
+                    </td>
+            `;
+
+
+                    suppliers.forEach(function(row, supplierIndex) {
+
+                        body += `
+                    <td class="border p-2">
+
+                        <textarea
+                            rows="2"
+                            name="description[${supplierIndex}][${criterion.id}]"
+                            class="w-full rounded-lg
+                                   border-gray-300
+                                   resize-none"
+                            placeholder="Enter description..."
+                        ></textarea>
+
+                    </td>
+
+                    <td class="border p-2">
+
+                        <select
+                            class="score w-full rounded-lg
+                                   border-gray-300"
+                            data-supplier-index="${supplierIndex}"
+                            name="score[${supplierIndex}][${criterion.id}]"
+                        >
+
+                            <option value="0">0</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+
+                        </select>
+
+                    </td>
+                `;
+
+                    });
+
+
+                    body += `
+                </tr>
+            `;
+
+                });
+
+                tbody.innerHTML = body;
+
+
+                /* ========================================================
+                   FOOTER / TOTAL SCORE
+                ======================================================== */
+
+                let footer = `
+            <tr class="bg-green-100 font-bold">
+
+                <td
+                    class="border px-4 py-4
+                           text-right text-gray-800"
+                >
+                    Total Score
+                </td>
+        `;
+
+
+                suppliers.forEach(function(row, index) {
+
+                    footer += `
+                <td
+                    class="border px-3 py-4 bg-green-50"
+                >
+                </td>
+
+                <td
+                    class="border px-3 py-4
+                           text-center bg-green-100"
+                >
+
+                    <span
+                        id="total${index}"
+                        class="inline-flex
+                               items-center
+                               justify-center
+                               min-w-[60px]
+                               px-4 py-2
+                               rounded-xl
+                               bg-green-600
+                               text-white
+                               text-lg
+                               font-bold"
+                    >
+                        0
+                    </span>
+
+                </td>
+            `;
+
+                });
+
+
+                footer += `
+            </tr>
+        `;
+
+                tfoot.innerHTML = footer;
+
+
+                attachScoreEvents();
+
+                calculateTotals();
+            }
+
+
+            /* ============================================================
+               SCORE CHANGE EVENT
+            ============================================================ */
+
+            function attachScoreEvents() {
+
+                document
+                    .querySelectorAll('.score')
+                    .forEach(function(select) {
+
+                        select.addEventListener(
+                            'change',
+                            function() {
+
+                                calculateTotals();
+
+                            }
+                        );
+
+                    });
+            }
+
+
+            /* ============================================================
+               ADD SUPPLIER
+            ============================================================ */
+
+            document
+                .getElementById('addSupplier')
+                ?.addEventListener(
+                    'click',
+                    function() {
+
+                        if (!supplierTable) {
+                            return;
+                        }
+
+                        const firstRow =
+                            supplierTable.querySelector(
+                                '.supplier-row'
+                            );
+
+                        if (!firstRow) {
+                            return;
+                        }
+
+                        const row =
+                            firstRow.cloneNode(true);
+
+
+                        /* Clear all inputs */
+
+                        row.querySelectorAll('input')
+                            .forEach(function(input) {
+
+                                input.value = '';
+
+                            });
+
+
+                        /* Clear textareas */
+
+                        row.querySelectorAll('textarea')
+                            .forEach(function(textarea) {
+
+                                textarea.value = '';
+
+                            });
+
+
+                        supplierTable.appendChild(row);
+
+
+                        updateSupplierNumber();
+
+                        buildEvaluationTable();
+
+                        updateRecommendedSupplier(false);
+                    }
+                );
+
+
+            /* ============================================================
+               REMOVE SUPPLIER
+            ============================================================ */
+
+            supplierTable?.addEventListener(
+                'click',
+                function(e) {
+
+                    const button =
+                        e.target.closest('.removeSupplier');
+
+                    if (!button) {
+                        return;
+                    }
+
+                    const rows = getSuppliers();
+
+                    if (rows.length <= 1) {
+
+                        alert(
+                            'At least one supplier is required.'
+                        );
+
+                        return;
+                    }
+
+                    const row =
+                        button.closest('.supplier-row');
+
+                    row?.remove();
+
 
                     updateSupplierNumber();
 
                     buildEvaluationTable();
 
+                    updateRecommendedSupplier(false);
                 }
+            );
 
-            }
 
-        });
+            /* ============================================================
+               SUPPLIER NAME CHANGED
+            ============================================================ */
 
-        function updateSupplierNumber() {
+            document.addEventListener(
+                'input',
+                function(e) {
 
-            supplierTable.querySelectorAll('tr').forEach((row, index) => {
+                    if (
+                        !e.target.classList.contains(
+                            'supplier-name'
+                        )
+                    ) {
+                        return;
+                    }
 
-                row.querySelector('.supplier-no').innerText = index + 1;
+                    const currentValue =
+                        recommendedSupplier?.value || '';
 
-            });
 
-        }
+                    /*
+                     * Rebuild evaluation table
+                     */
 
-        /*=====================================================
-        =            BUILD EVALUATION TABLE
-        =====================================================*/
+                    buildEvaluationTable();
 
-        function buildEvaluationTable() {
 
-            const table = document.getElementById('evaluationTable');
+                    /*
+                     * Rebuild recommendation dropdown
+                     */
 
-            const thead = table.querySelector('thead');
+                    updateRecommendedSupplier(true);
 
-            const tbody = table.querySelector('tbody');
 
-            const tfoot = table.querySelector('tfoot');
+                    /*
+                     * Restore selected supplier
+                     */
 
-            const suppliers = document.querySelectorAll('.supplier-row');
+                    if (
+                        currentValue &&
+                        recommendedSupplier &&
+                        Array.from(
+                            recommendedSupplier.options
+                        ).some(function(option) {
 
-            /*=========================
-            Header
-            =========================*/
+                            return option.value === currentValue;
 
-            let header = `
-                <tr class="bg-green-600 text-white">
+                        })
+                    ) {
 
-                    <th rowspan="2"
-                        class="border px-4 py-3">
+                        recommendedSupplier.value =
+                            currentValue;
 
-                        Criteria
-
-                    </th>
-                `;
-
-            suppliers.forEach((row, index) => {
-
-                let supplierName = row.querySelector('.supplier-name').value;
-
-                if (supplierName === '') {
-
-                    supplierName = 'Supplier ' + (index + 1);
-
-                }
-
-                header += `
-                    <th colspan="2"
-                        class="border px-4 py-3 text-center">
-
-                        ${supplierName}
-
-                    </th>
-                    `;
-
-            });
-
-            header += '</tr>';
-
-            header += `<tr class="bg-green-600 text-white">`;
-
-            suppliers.forEach(() => {
-
-                header += `
-
-                    <th class="border px-3 py-2">
-
-                        Description
-
-                    </th>
-
-                    <th class="border px-3 py-2 w-24">
-
-                        Score
-
-                    </th>
-
-                    `;
-
-            });
-
-            header += '</tr>';
-
-            thead.innerHTML = header;
-
-            /*=========================
-            Body
-            =========================*/
-
-            let body = '';
-
-            criteria.forEach(function(criterion) {
-
-                body += `
-                    <tr>
-
-                        <td class="border px-4 py-3 font-semibold bg-gray-50">
-
-                            ${criterion.name}
-
-                        </td>
-                    `;
-
-                suppliers.forEach(function(row, index) {
-
-                    body += `
-
-                        <td class="border p-2">
-
-                            <textarea
-
-                                rows="1"
-
-                                name="description[${index}][${criterion.id}]"
-
-                                class="w-full rounded-lg border-gray-300 mt-1 resize-none"></textarea>
-
-                        </td>
-
-                        <td class="border p-2">
-
-                            <select
-
-                                class="score w-full rounded-lg border-gray-300"
-
-                                name="score[${index}][${criterion.id}]">
-
-                                <option value="0">0</option>
-                                <option value="1">1</option>
-                                <option value="2">2</option>
-                                <option value="3">3</option>
-
-                            </select>
-
-                        </td>
-
-                        `;
-
-                });
-
-                body += `</tr>`;
-
-            });
-
-            tbody.innerHTML = body;
-
-            /*=========================
-            Footer
-            =========================*/
-
-            let footer = `
-                <tr class="bg-green-50 font-bold">
-
-                    <td class="border px-4 py-3 text-right">
-
-                        Total Score
-
-                    </td>
-                `;
-
-            suppliers.forEach((row, index) => {
-
-                footer += `
-
-                    <td class="border"></td>
-
-                    <td class="border text-center">
-
-                        <span
-                            id="total${index}"
-                            class="text-lg font-bold text-green-700">
-
-                            0
-
-                        </span>
-
-                    </td>
-
-                    `;
-
-            });
-
-            footer += '</tr>';
-
-            tfoot.innerHTML = footer;
-
-            attachScoreEvents();
-
-        }
-
-        /*=====================================================
-        =            SCORE EVENTS
-        =====================================================*/
-
-        function attachScoreEvents() {
-
-            document.querySelectorAll('.score').forEach(function(select) {
-
-                select.addEventListener('change', calculateTotals);
-
-            });
-
-            calculateTotals();
-
-        }
-
-        /*=====================================================
-        =            TOTAL SCORE
-        =====================================================*/
-
-        function calculateTotals() {
-
-            let highestScore = -1;
-
-            let bestSupplier = '';
-
-            document.querySelectorAll('.supplier-row').forEach(function(row, index) {
-
-                let total = 0;
-
-                document.querySelectorAll(`select[name^="score[${index}]"]`)
-                    .forEach(function(select) {
-
-                        total += parseInt(select.value) || 0;
-
-                    });
-
-                const totalCell = document.getElementById('total' + index);
-
-                if (totalCell) {
-
-                    totalCell.innerText = total;
+                        updateSelectedSupplierScore();
+                    }
 
                 }
+            );
 
-                const supplier = row.querySelector('.supplier-name').value;
 
-                if (total > highestScore) {
+            /* ============================================================
+               USER SELECTS RECOMMENDED SUPPLIER
+            ============================================================ */
 
-                    highestScore = total;
+            recommendedSupplier?.addEventListener(
+                'change',
+                function() {
 
-                    bestSupplier = supplier;
+                    updateSelectedSupplierScore();
 
                 }
+            );
 
-            });
 
-            if (document.getElementById('highest_score')) {
+            /* ============================================================
+               COMMITTEE
+            ============================================================ */
 
-                document.getElementById('highest_score').value = highestScore;
+            document
+                .getElementById('addCommittee')
+                ?.addEventListener(
+                    'click',
+                    function() {
 
-            }
+                        if (!committeeBody) {
+                            return;
+                        }
 
-            if (document.getElementById('recommended_supplier')) {
+                        const firstRow =
+                            committeeBody.querySelector(
+                                '.committee-row'
+                            );
 
-                document.getElementById('recommended_supplier').value = bestSupplier;
+                        if (!firstRow) {
+                            return;
+                        }
 
-            }
+                        const row =
+                            firstRow.cloneNode(true);
 
-        }
 
-        /*=====================================================
-        =            UPDATE SUPPLIER NAME
-        =====================================================*/
+                        /*
+                         * Clear inputs
+                         */
 
-        document.addEventListener('input', function(e) {
+                        row.querySelectorAll('input')
+                            .forEach(function(input) {
 
-            if (e.target.classList.contains('supplier-name')) {
+                                input.value = '';
 
-                buildEvaluationTable();
+                            });
 
-            }
 
-        });
+                        /*
+                         * Hide autocomplete
+                         */
 
-        /*=====================================================
-        =            COMMITTEE
-        =====================================================*/
+                        const list =
+                            row.querySelector(
+                                '.committee-user-list'
+                            );
 
-        const committeeBody = document.querySelector('#committeeTable tbody');
+                        if (list) {
+                            list.classList.add('hidden');
+                        }
 
-        // Add Committee Row
-        document.getElementById('addCommittee').addEventListener('click', function() {
 
-            let row = committeeBody.rows[0].cloneNode(true);
+                        committeeBody.appendChild(row);
 
-            // Clear inputs
-            row.querySelectorAll('input').forEach(input => {
-                input.value = '';
-            });
+                        updateCommitteeNo();
 
-            // Hide autocomplete list
-            row.querySelector('.committee-user-list').classList.add('hidden');
+                    }
+                );
 
-            committeeBody.appendChild(row);
 
-            updateCommitteeNo();
+            /* ============================================================
+               REMOVE COMMITTEE
+            ============================================================ */
 
-        });
+            committeeBody?.addEventListener(
+                'click',
+                function(e) {
 
-        // Remove Committee Row
-        committeeBody.addEventListener('click', function(e) {
+                    const button =
+                        e.target.closest(
+                            '.removeCommittee'
+                        );
 
-            if (e.target.closest('.removeCommittee')) {
+                    if (!button) {
+                        return;
+                    }
 
-                if (committeeBody.rows.length > 1) {
+                    const rows =
+                        committeeBody.querySelectorAll(
+                            '.committee-row'
+                        );
 
-                    e.target.closest('tr').remove();
+                    if (rows.length <= 1) {
+                        return;
+                    }
+
+                    button
+                        .closest('.committee-row')
+                        ?.remove();
 
                     updateCommitteeNo();
 
                 }
+            );
 
-            }
 
-        });
+            /* ============================================================
+               COMMITTEE NUMBER
+            ============================================================ */
 
-        // Update Row Number
-        function updateCommitteeNo() {
+            function updateCommitteeNo() {
 
-            committeeBody.querySelectorAll('.committee-row').forEach((row, index) => {
-
-                row.querySelector('.committee-no').innerText = index + 1;
-
-            });
-
-        }
-
-        /*=====================================================
-        =            COMMITTEE AUTOCOMPLETE
-        =====================================================*/
-
-        // Filter while typing
-        document.addEventListener('input', function(e) {
-
-            if (!e.target.classList.contains('committee-user-name')) return;
-
-            const input = e.target;
-            const keyword = input.value.trim().toLowerCase();
-
-            const td = input.closest('td');
-            const list = td.querySelector('.committee-user-list');
-            const items = list.querySelectorAll('.committee-user-item');
-
-            if (keyword === '') {
-
-                list.classList.add('hidden');
-                return;
-
-            }
-
-            let found = false;
-
-            items.forEach(item => {
-
-                if (item.dataset.name.toLowerCase().includes(keyword)) {
-
-                    item.style.display = '';
-
-                    found = true;
-
-                } else {
-
-                    item.style.display = 'none';
-
+                if (!committeeBody) {
+                    return;
                 }
 
-            });
+                committeeBody
+                    .querySelectorAll('.committee-row')
+                    .forEach(function(row, index) {
 
-            list.classList.toggle('hidden', !found);
+                        const number =
+                            row.querySelector(
+                                '.committee-no'
+                            );
 
-        });
+                        if (number) {
+                            number.textContent =
+                                index + 1;
+                        }
 
-        // Select User
-        document.addEventListener('click', function(e) {
-
-            if (e.target.classList.contains('committee-user-item')) {
-
-                const item = e.target;
-
-                const td = item.closest('td');
-
-                td.querySelector('.committee-user-name').value = item.dataset.name;
-
-                td.querySelector('.committee-user-id').value = item.dataset.id;
-
-                td.querySelector('.committee-user-list').classList.add('hidden');
-
-                return;
-
+                    });
             }
 
-            // Hide all lists when clicking outside
-            if (!e.target.closest('.committee-user-name') &&
-                !e.target.closest('.committee-user-list')) {
 
-                document.querySelectorAll('.committee-user-list').forEach(list => {
+            /* ============================================================
+               COMMITTEE AUTOCOMPLETE
+            ============================================================ */
 
-                    list.classList.add('hidden');
+            document.addEventListener(
+                'input',
+                function(e) {
 
-                });
+                    if (
+                        !e.target.classList.contains(
+                            'committee-user-name'
+                        )
+                    ) {
+                        return;
+                    }
 
-            }
+                    const input = e.target;
 
-        });
+                    const keyword =
+                        input.value
+                        .trim()
+                        .toLowerCase();
 
-        /*=====================================================
-        =            INITIAL LOAD
-        =====================================================*/
+                    const td =
+                        input.closest('td');
 
-        window.onload = function() {
+                    if (!td) {
+                        return;
+                    }
+
+                    const list =
+                        td.querySelector(
+                            '.committee-user-list'
+                        );
+
+                    if (!list) {
+                        return;
+                    }
+
+                    const items =
+                        list.querySelectorAll(
+                            '.committee-user-item'
+                        );
+
+
+                    if (keyword === '') {
+
+                        list.classList.add('hidden');
+
+                        return;
+                    }
+
+
+                    let found = false;
+
+                    items.forEach(function(item) {
+
+                        const name =
+                            (
+                                item.dataset.name || ''
+                            ).toLowerCase();
+
+                        if (name.includes(keyword)) {
+
+                            item.style.display = '';
+
+                            found = true;
+
+                        } else {
+
+                            item.style.display = 'none';
+
+                        }
+
+                    });
+
+
+                    list.classList.toggle(
+                        'hidden',
+                        !found
+                    );
+
+                }
+            );
+
+
+            /* ============================================================
+               SELECT COMMITTEE USER
+            ============================================================ */
+
+            document.addEventListener(
+                'click',
+                function(e) {
+
+                    const item =
+                        e.target.closest(
+                            '.committee-user-item'
+                        );
+
+                    if (item) {
+
+                        const td =
+                            item.closest('td');
+
+                        if (!td) {
+                            return;
+                        }
+
+                        const nameInput =
+                            td.querySelector(
+                                '.committee-user-name'
+                            );
+
+                        const idInput =
+                            td.querySelector(
+                                '.committee-user-id'
+                            );
+
+                        const list =
+                            td.querySelector(
+                                '.committee-user-list'
+                            );
+
+
+                        if (nameInput) {
+                            nameInput.value =
+                                item.dataset.name;
+                        }
+
+                        if (idInput) {
+                            idInput.value =
+                                item.dataset.id;
+                        }
+
+                        if (list) {
+                            list.classList.add('hidden');
+                        }
+
+                        return;
+                    }
+
+
+                    /*
+                     * Hide autocomplete when clicking outside
+                     */
+
+                    if (
+                        !e.target.closest(
+                            '.committee-user-name'
+                        ) &&
+                        !e.target.closest(
+                            '.committee-user-list'
+                        )
+                    ) {
+
+                        document
+                            .querySelectorAll(
+                                '.committee-user-list'
+                            )
+                            .forEach(function(list) {
+
+                                list.classList.add(
+                                    'hidden'
+                                );
+
+                            });
+
+                    }
+
+                }
+            );
+
+
+            /* ============================================================
+               INITIAL LOAD
+            ============================================================ */
+
+            updateSupplierNumber();
 
             buildEvaluationTable();
 
-        };
+            updateRecommendedSupplier(false);
+
+            updateCommitteeNo();
+
+        });
     </script>
 @endsection

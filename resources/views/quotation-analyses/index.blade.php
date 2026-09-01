@@ -329,11 +329,11 @@
 
                                 </td>
 
-                                <td class="px-6 py-2">
+                                <td class="px-6 py-2 w-[400px]">
 
                                     @if ($quotation->recommendedSupplier)
                                         <span
-                                            class="px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-semibold">
+                                            class="px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-semibold line-clamp-1">
 
                                             {{ $quotation->recommendedSupplier->supplier_name }}
 

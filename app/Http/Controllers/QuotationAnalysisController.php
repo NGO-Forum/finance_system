@@ -74,24 +74,31 @@ class QuotationAnalysisController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-
             'qa_date' => 'required|date',
-
             'item_name' => 'required|string|max:255',
-
             'quantity' => 'required|numeric|min:1',
 
             'decision_explanation' => 'nullable|string',
 
-            // Suppliers
+            /*
+        |--------------------------------------------------------------------------
+        | Suppliers
+        |--------------------------------------------------------------------------
+        */
             'supplier_name' => 'required|array|min:1',
             'supplier_name.*' => 'required|string|max:255',
 
+            'contact_person' => 'nullable|array',
             'contact_person.*' => 'nullable|string|max:255',
 
+            'phone' => 'nullable|array',
             'phone.*' => 'nullable|string|max:100',
 
-            // Evaluation
+            /*
+        |--------------------------------------------------------------------------
+        | Evaluation
+        |--------------------------------------------------------------------------
+        */
             'description' => 'required|array',
             'score' => 'required|array',
 
@@ -99,16 +106,27 @@ class QuotationAnalysisController extends Controller
             'score.*' => 'required|array',
 
             'description.*.*' => 'nullable|string',
-
             'score.*.*' => 'required|integer|min:0|max:3',
 
-            // Committee
+            /*
+        |--------------------------------------------------------------------------
+        | USER SELECTED RECOMMENDED SUPPLIER
+        |--------------------------------------------------------------------------
+        */
+            'recommended_supplier_no' => [
+                'required',
+                'integer',
+                'min:1',
+            ],
+
+            /*
+        |--------------------------------------------------------------------------
+        | Committee
+        |--------------------------------------------------------------------------
+        */
             'committee_user.*' => 'nullable|exists:users,id',
-
             'committee_position.*' => 'nullable|string|max:255',
-
             'committee_date.*' => 'nullable|date',
-
         ]);
 
         try {
@@ -122,30 +140,21 @@ class QuotationAnalysisController extends Controller
         */
 
             $quotation = QuotationAnalysis::create([
-
                 'qa_no' => $this->generateQaNumber(),
-
                 'qa_date' => $request->qa_date,
-
                 'item_name' => $request->item_name,
-
                 'quantity' => $request->quantity,
-
                 'decision_explanation' => $request->decision_explanation,
-
                 'created_by' => auth()->id(),
-
             ]);
 
             /*
         |--------------------------------------------------------------------------
-        | Supplier & Scores
+        | Create Suppliers + Scores
         |--------------------------------------------------------------------------
         */
 
-            $bestSupplier = null;
-
-            $highestScore = -1;
+            $createdSuppliers = [];
 
             foreach ($request->supplier_name as $supplierIndex => $supplierName) {
 
@@ -153,57 +162,100 @@ class QuotationAnalysisController extends Controller
                     continue;
                 }
 
-                $supplier = QuotationAnalysisSupplier::create([
+                $supplierNo = $supplierIndex + 1;
 
+                $supplier = QuotationAnalysisSupplier::create([
                     'quotation_analysis_id' => $quotation->id,
 
-                    'supplier_no' => $supplierIndex + 1,
+                    'supplier_no' => $supplierNo,
 
                     'supplier_name' => $supplierName,
 
-                    'contact_person' => $request->contact_person[$supplierIndex] ?? null,
+                    'contact_person' =>
+                    $request->contact_person[$supplierIndex] ?? null,
 
-                    'phone' => $request->phone[$supplierIndex] ?? null,
+                    'phone' =>
+                    $request->phone[$supplierIndex] ?? null,
 
                     'total_score' => 0,
-
                 ]);
+
+                /*
+            |--------------------------------------------------------------------------
+            | Save supplier using supplier order
+            |--------------------------------------------------------------------------
+            */
+
+                $createdSuppliers[$supplierNo] = $supplier;
+
+                /*
+            |--------------------------------------------------------------------------
+            | Save Scores
+            |--------------------------------------------------------------------------
+            */
 
                 $totalScore = 0;
 
-                if (isset($request->score[$supplierIndex])) {
+                foreach (
+                    ($request->score[$supplierIndex] ?? [])
+                    as $criterionId => $score
+                ) {
 
-                    foreach ($request->score[$supplierIndex] as $criterionId => $score) {
+                    QuotationAnalysisScore::create([
+                        'quotation_analysis_supplier_id' =>
+                        $supplier->id,
 
-                        QuotationAnalysisScore::create([
+                        'quotation_analysis_criterion_id' =>
+                        $criterionId,
 
-                            'quotation_analysis_supplier_id' => $supplier->id,
+                        'description' =>
+                        $request->description[$supplierIndex][$criterionId]
+                            ?? null,
 
-                            'quotation_analysis_criterion_id' => $criterionId,
+                        'score' => (int) $score,
+                    ]);
 
-                            'description' => $request->description[$supplierIndex][$criterionId] ?? null,
-
-                            'score' => $score,
-
-                        ]);
-
-                        $totalScore += (int) $score;
-                    }
+                    $totalScore += (int) $score;
                 }
+
+                /*
+            |--------------------------------------------------------------------------
+            | Save Total Score
+            |--------------------------------------------------------------------------
+            */
 
                 $supplier->update([
-
                     'total_score' => $totalScore,
-
                 ]);
-
-                if ($totalScore > $highestScore) {
-
-                    $highestScore = $totalScore;
-
-                    $bestSupplier = $supplier;
-                }
             }
+
+            /*
+        |--------------------------------------------------------------------------
+        | USER SELECTED RECOMMENDED SUPPLIER
+        |--------------------------------------------------------------------------
+        |
+        | IMPORTANT:
+        | Do NOT automatically choose highest score.
+        |
+        */
+
+            $recommendedSupplierNo =
+                (int) $request->recommended_supplier_no;
+
+            $recommendedSupplier =
+                $createdSuppliers[$recommendedSupplierNo] ?? null;
+
+            if (!$recommendedSupplier) {
+
+                throw new \Exception(
+                    'Invalid recommended supplier selected.'
+                );
+            }
+
+            $quotation->update([
+                'recommended_supplier_id' =>
+                $recommendedSupplier->id,
+            ]);
 
             /*
         |--------------------------------------------------------------------------
@@ -213,53 +265,51 @@ class QuotationAnalysisController extends Controller
 
             if ($request->filled('committee_user')) {
 
-                foreach ($request->committee_user as $index => $userId) {
+                foreach (
+                    $request->committee_user
+                    as $index => $userId
+                ) {
 
                     if (empty($userId)) {
                         continue;
                     }
 
                     QuotationAnalysisCommittee::create([
+                        'quotation_analysis_id' =>
+                        $quotation->id,
 
-                        'quotation_analysis_id' => $quotation->id,
+                        'user_id' =>
+                        $userId,
 
-                        'user_id' => $userId,
+                        'position' =>
+                        $request->committee_position[$index]
+                            ?? null,
 
-                        'position' => $request->committee_position[$index] ?? null,
-
-                        'signed_date' => $request->committee_date[$index] ?? null,
-
+                        'signed_date' =>
+                        $request->committee_date[$index]
+                            ?? null,
                     ]);
                 }
-            }
-
-            /*
-        |--------------------------------------------------------------------------
-        | Recommended Supplier
-        |--------------------------------------------------------------------------
-        */
-
-            if ($bestSupplier) {
-
-                $quotation->update([
-
-                    'recommended_supplier_id' => $bestSupplier->id,
-
-                ]);
             }
 
             DB::commit();
 
             return redirect()
                 ->route('quotation-analyses.index')
-                ->with('success', 'Quotation Analysis created successfully.');
+                ->with(
+                    'success',
+                    'Quotation Analysis created successfully.'
+                );
         } catch (\Throwable $e) {
 
             DB::rollBack();
 
             return back()
                 ->withInput()
-                ->with('error', $e->getMessage());
+                ->with(
+                    'error',
+                    $e->getMessage()
+                );
         }
     }
 
@@ -287,43 +337,74 @@ class QuotationAnalysisController extends Controller
         $quotationAnalysis->load([
             'suppliers.scores.criterion',
             'committees.user',
+            'recommendedSupplier',
         ]);
 
-        $criteria = QuotationAnalysisCriterion::orderBy('sort_order')->get();
+        $criteria =
+            QuotationAnalysisCriterion::orderBy('sort_order')
+            ->get();
 
-        $users = User::orderBy('name')->get();
+        $users =
+            User::orderBy('name')
+            ->get();
 
-        $suppliersData = $quotationAnalysis->suppliers->map(function ($supplier) {
+        $suppliersData =
+            $quotationAnalysis->suppliers
+            ->sortBy('supplier_no')
+            ->values()
+            ->map(function ($supplier) use ($quotationAnalysis) {
 
-            return [
+                return [
 
-                'id' => $supplier->id,
+                    'id' =>
+                    $supplier->id,
 
-                'supplier_no' => $supplier->supplier_no,
+                    'supplier_no' =>
+                    $supplier->supplier_no,
 
-                'supplier_name' => $supplier->supplier_name,
+                    'supplier_name' =>
+                    $supplier->supplier_name,
 
-                'contact_person' => $supplier->contact_person,
+                    'contact_person' =>
+                    $supplier->contact_person,
 
-                'phone' => $supplier->phone,
+                    'phone' =>
+                    $supplier->phone,
 
-                'total_score' => $supplier->total_score,
+                    'total_score' =>
+                    $supplier->total_score,
 
-                'scores' => $supplier->scores->map(function ($score) {
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Is this the selected recommended supplier?
+                    |--------------------------------------------------------------------------
+                    */
 
-                    return [
+                    'recommended' =>
+                    (int) $quotationAnalysis->recommended_supplier_id
+                        === (int) $supplier->id,
 
-                        'criterion_id' => $score->quotation_analysis_criterion_id,
+                    'scores' =>
+                    $supplier->scores
+                        ->map(function ($score) {
 
-                        'description' => $score->description,
+                            return [
 
-                        'score' => (int) $score->score,
+                                'criterion_id' =>
+                                $score->quotation_analysis_criterion_id,
 
-                    ];
-                })->values(),
+                                'description' =>
+                                $score->description,
 
-            ];
-        })->values();
+                                'score' =>
+                                (int) $score->score,
+
+                            ];
+                        })
+                        ->values(),
+                ];
+            })
+            ->values();
 
         return view(
             'quotation-analyses.edit',
@@ -337,28 +418,111 @@ class QuotationAnalysisController extends Controller
     }
 
 
-    public function update(Request $request, QuotationAnalysis $quotationAnalysis)
-    {
+    public function update(
+        Request $request,
+        QuotationAnalysis $quotationAnalysis
+    ) {
+
         $request->validate([
-            'qa_date' => 'required|date',
-            'item_name' => 'required|string|max:255',
-            'quantity' => 'required|numeric|min:1',
 
-            'supplier_name.*' => 'required|string|max:255',
-            'contact_person.*' => 'nullable|string|max:255',
-            'phone.*' => 'nullable|string|max:100',
+            /*
+        |--------------------------------------------------------------------------
+        | General
+        |--------------------------------------------------------------------------
+        */
 
-            'description.*.*' => 'nullable|string',
-            'score.*.*' => 'required|integer|min:0|max:3',
+            'qa_date' =>
+            'required|date',
 
-            'committee_user.*' => 'nullable|exists:users,id',
-            'committee_position.*' => 'nullable|string|max:255',
-            'committee_date.*' => 'nullable|date',
+            'item_name' =>
+            'required|string|max:255',
 
-            'decision_explanation' => 'nullable|string',
+            'quantity' =>
+            'required|numeric|min:1',
+
+            'decision_explanation' =>
+            'nullable|string',
+
+            /*
+        |--------------------------------------------------------------------------
+        | Suppliers
+        |--------------------------------------------------------------------------
+        */
+
+            'supplier_name' =>
+            'required|array|min:1',
+
+            'supplier_name.*' =>
+            'required|string|max:255',
+
+            'contact_person' =>
+            'nullable|array',
+
+            'contact_person.*' =>
+            'nullable|string|max:255',
+
+            'phone' =>
+            'nullable|array',
+
+            'phone.*' =>
+            'nullable|string|max:100',
+
+            /*
+        |--------------------------------------------------------------------------
+        | Scores
+        |--------------------------------------------------------------------------
+        */
+
+            'description' =>
+            'required|array',
+
+            'score' =>
+            'required|array',
+
+            'description.*' =>
+            'required|array',
+
+            'score.*' =>
+            'required|array',
+
+            'description.*.*' =>
+            'nullable|string',
+
+            'score.*.*' =>
+            'required|integer|min:0|max:3',
+
+            /*
+        |--------------------------------------------------------------------------
+        | USER SELECTED RECOMMENDED SUPPLIER
+        |--------------------------------------------------------------------------
+        */
+
+            'recommended_supplier_no' => [
+                'required',
+                'integer',
+                'min:1',
+            ],
+
+            /*
+        |--------------------------------------------------------------------------
+        | Committee
+        |--------------------------------------------------------------------------
+        */
+
+            'committee_user.*' =>
+            'nullable|exists:users,id',
+
+            'committee_position.*' =>
+            'nullable|string|max:255',
+
+            'committee_date.*' =>
+            'nullable|date',
         ]);
 
-        DB::transaction(function () use ($request, $quotationAnalysis) {
+        DB::transaction(function () use (
+            $request,
+            $quotationAnalysis
+        ) {
 
             /*
         |--------------------------------------------------------------------------
@@ -367,110 +531,236 @@ class QuotationAnalysisController extends Controller
         */
 
             $quotationAnalysis->update([
-                'qa_date' => $request->qa_date,
-                'item_name' => $request->item_name,
-                'quantity' => $request->quantity,
-                'decision_explanation' => $request->decision_explanation,
+
+                'qa_date' =>
+                $request->qa_date,
+
+                'item_name' =>
+                $request->item_name,
+
+                'quantity' =>
+                $request->quantity,
+
+                'decision_explanation' =>
+                $request->decision_explanation,
+
             ]);
 
             /*
         |--------------------------------------------------------------------------
-        | Delete Existing Data
+        | Delete Existing Scores
         |--------------------------------------------------------------------------
         */
 
-            foreach ($quotationAnalysis->suppliers as $supplier) {
-                $supplier->scores()->delete();
-            }
+            foreach (
+                $quotationAnalysis->suppliers
+                as $oldSupplier
+            ) {
 
-            $quotationAnalysis->suppliers()->delete();
-            $quotationAnalysis->committees()->delete();
+                $oldSupplier
+                    ->scores()
+                    ->delete();
+            }
 
             /*
         |--------------------------------------------------------------------------
-        | Save Suppliers & Scores
+        | Delete Existing Suppliers
         |--------------------------------------------------------------------------
         */
 
-            foreach ($request->supplier_name as $supplierIndex => $supplierName) {
+            $quotationAnalysis
+                ->suppliers()
+                ->delete();
 
-                $supplier = $quotationAnalysis->suppliers()->create([
+            /*
+        |--------------------------------------------------------------------------
+        | Delete Existing Committee
+        |--------------------------------------------------------------------------
+        */
 
-                    'supplier_no'     => $supplierIndex + 1,
-                    'supplier_name'   => $supplierName,
-                    'contact_person'  => $request->contact_person[$supplierIndex] ?? null,
-                    'phone'           => $request->phone[$supplierIndex] ?? null,
-                    'total_score'     => 0,
+            $quotationAnalysis
+                ->committees()
+                ->delete();
 
-                ]);
+            /*
+        |--------------------------------------------------------------------------
+        | Create New Suppliers
+        |--------------------------------------------------------------------------
+        */
 
-                $totalScore = 0;
+            $createdSuppliers = [];
 
-                foreach (($request->score[$supplierIndex] ?? []) as $criterionId => $score) {
+            foreach (
+                $request->supplier_name
+                as $supplierIndex => $supplierName
+            ) {
 
-                    $supplier->scores()->create([
+                if (blank($supplierName)) {
+                    continue;
+                }
 
-                        'quotation_analysis_criterion_id' => $criterionId,
-                        'description' => $request->description[$supplierIndex][$criterionId] ?? null,
-                        'score' => $score,
+                $supplierNo =
+                    $supplierIndex + 1;
+
+                $supplier =
+                    $quotationAnalysis
+                    ->suppliers()
+                    ->create([
+
+                        'supplier_no' =>
+                        $supplierNo,
+
+                        'supplier_name' =>
+                        $supplierName,
+
+                        'contact_person' =>
+                        $request->contact_person[$supplierIndex]
+                            ?? null,
+
+                        'phone' =>
+                        $request->phone[$supplierIndex]
+                            ?? null,
+
+                        'total_score' =>
+                        0,
 
                     ]);
 
-                    $totalScore += (int) $score;
+                /*
+            |--------------------------------------------------------------------------
+            | Keep supplier by order number
+            |--------------------------------------------------------------------------
+            */
+
+                $createdSuppliers[$supplierNo] =
+                    $supplier;
+
+                /*
+            |--------------------------------------------------------------------------
+            | Save Scores
+            |--------------------------------------------------------------------------
+            */
+
+                $totalScore = 0;
+
+                foreach (
+                    ($request->score[$supplierIndex] ?? [])
+                    as $criterionId => $score
+                ) {
+
+                    $supplier
+                        ->scores()
+                        ->create([
+
+                            'quotation_analysis_criterion_id' =>
+                            $criterionId,
+
+                            'description' =>
+                            $request
+                                ->description[$supplierIndex][$criterionId]
+                                ?? null,
+
+                            'score' =>
+                            (int) $score,
+
+                        ]);
+
+                    $totalScore +=
+                        (int) $score;
                 }
 
+                /*
+            |--------------------------------------------------------------------------
+            | Save Total
+            |--------------------------------------------------------------------------
+            */
+
                 $supplier->update([
-                    'total_score' => $totalScore,
+
+                    'total_score' =>
+                    $totalScore,
+
                 ]);
             }
 
             /*
         |--------------------------------------------------------------------------
-        | Save Committee Members
+        | USER SELECTED RECOMMENDED SUPPLIER
+        |--------------------------------------------------------------------------
+        */
+
+            $recommendedSupplierNo =
+                (int) $request->recommended_supplier_no;
+
+            $recommendedSupplier =
+                $createdSuppliers[$recommendedSupplierNo]
+                ?? null;
+
+            if (!$recommendedSupplier) {
+
+                throw new \Exception(
+                    'Invalid recommended supplier selected.'
+                );
+            }
+
+            /*
+        |--------------------------------------------------------------------------
+        | Save User Selection
+        |--------------------------------------------------------------------------
+        */
+
+            $quotationAnalysis->update([
+
+                'recommended_supplier_id' =>
+                $recommendedSupplier->id,
+
+            ]);
+
+            /*
+        |--------------------------------------------------------------------------
+        | Committee
         |--------------------------------------------------------------------------
         */
 
             if ($request->filled('committee_user')) {
 
-                foreach ($request->committee_user as $index => $userId) {
+                foreach (
+                    $request->committee_user
+                    as $index => $userId
+                ) {
 
                     if (empty($userId)) {
                         continue;
                     }
 
-                    $quotationAnalysis->committees()->create([
+                    $quotationAnalysis
+                        ->committees()
+                        ->create([
 
-                        'user_id' => $userId,
+                            'user_id' =>
+                            $userId,
 
-                        'position' => $request->committee_position[$index] ?? null,
+                            'position' =>
+                            $request
+                                ->committee_position[$index]
+                                ?? null,
 
-                        'signed_date' => $request->committee_date[$index] ?? null,
+                            'signed_date' =>
+                            $request
+                                ->committee_date[$index]
+                                ?? null,
 
-                    ]);
+                        ]);
                 }
             }
-
-            /*
-        |--------------------------------------------------------------------------
-        | Update Recommended Supplier
-        |--------------------------------------------------------------------------
-        */
-
-            $recommendedSupplier = $quotationAnalysis
-                ->suppliers()
-                ->orderByDesc('total_score')
-                ->first();
-
-            $quotationAnalysis->update([
-
-                'recommended_supplier_id' => optional($recommendedSupplier)->id,
-
-            ]);
         });
 
         return redirect()
             ->route('quotation-analyses.index')
-            ->with('success', 'Quotation Analysis updated successfully.');
+            ->with(
+                'success',
+                'Quotation Analysis updated successfully.'
+            );
     }
 
 
@@ -588,7 +878,7 @@ class QuotationAnalysisController extends Controller
 
                     $logo,
 
-                    0.05,
+                    0.06,
 
                     [150, 100],
 

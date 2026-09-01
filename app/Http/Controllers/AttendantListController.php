@@ -299,7 +299,7 @@ class AttendantListController extends Controller
 
         $mpdf->SetWatermarkImage(
             public_path('images/logo.png'),
-            0.05,
+            0.06,
             [150, 100],   // width, height (mm)
             [75, 55]      // x, y position (mm)
         );

@@ -856,7 +856,7 @@ class PurchaseOrderController extends Controller
             if (file_exists($logo)) {
                 $mpdf->SetWatermarkImage(
                     $logo,
-                    0.05,
+                    0.06,
                     [150, 100],
                     [30, 80]
                 );

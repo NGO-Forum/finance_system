@@ -322,7 +322,7 @@ class VerbalQuoteController extends Controller
 
                 $mpdf->SetWatermarkImage(
                     $logo,
-                    0.05,
+                    0.06,
                     [120, 100],
                     [45, 70]
                 );
