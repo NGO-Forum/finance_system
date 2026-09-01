@@ -38,14 +38,6 @@ class PurchaseOrderController extends Controller
             });
         }
 
-        if ($request->filled('status')) {
-
-            $query->where(
-                'status',
-                $request->status
-            );
-        }
-
         $purchaseOrders = $query
             ->latest()
             ->paginate(10);
@@ -162,6 +154,18 @@ class PurchaseOrderController extends Controller
                 'max:10',
             ],
 
+
+            'service_charge' => [
+                'nullable',
+                'numeric',
+                'min:0',
+            ],
+
+            'other_tax_charge' => [
+                'nullable',
+                'numeric',
+                'min:0',
+            ],
 
             'tax_percent' => [
                 'nullable',
@@ -303,13 +307,17 @@ class PurchaseOrderController extends Controller
                 'currency' =>
                 $validated['currency'],
 
+                'service_charge' =>
+                $validated['service_charge'] ?? 0,
+
+                'other_tax_charge' =>
+                $validated['other_tax_charge'] ?? 0,
 
                 'tax_percent' =>
                 $validated['tax_percent'] ?? 0,
 
                 'other_charges' =>
                 $validated['other_charges'] ?? 0,
-
 
                 'ordered_by' =>
                 $validated['ordered_by'] ?? null,
@@ -492,6 +500,18 @@ class PurchaseOrderController extends Controller
                 'max:10',
             ],
 
+            'service_charge' => [
+                'nullable',
+                'numeric',
+                'min:0',
+            ],
+
+            'other_tax_charge' => [
+                'nullable',
+                'numeric',
+                'min:0',
+            ],
+
             'tax_percent' => [
                 'nullable',
                 'numeric',
@@ -594,6 +614,38 @@ class PurchaseOrderController extends Controller
             $purchaseOrder
         ) {
 
+            $subtotal = 0;
+
+            foreach ($validated['items'] as $item) {
+
+                $quantity = (float) $item['quantity'];
+                $unitPrice = (float) $item['unit_price'];
+
+                $subtotal += $quantity * $unitPrice;
+            }
+
+            $servicePercent = (float) ($validated['service_charge'] ?? 0);
+            $otherTaxPercent = (float) ($validated['other_tax_charge'] ?? 0);
+            $vatPercent = (float) ($validated['tax_percent'] ?? 0);
+            $otherCharges = (float) ($validated['other_charges'] ?? 0);
+
+            $serviceAmount =
+                $subtotal * $servicePercent / 100;
+
+            $otherTaxAmount =
+                $subtotal * $otherTaxPercent / 100;
+
+            $vatAmount =
+                $subtotal * $vatPercent / 100;
+
+            $grandTotal =
+                $subtotal
+                + $serviceAmount
+                + $otherTaxAmount
+                + $vatAmount
+                + $otherCharges;
+
+
             $purchaseOrder->update([
 
                 'po_no' =>
@@ -632,11 +684,19 @@ class PurchaseOrderController extends Controller
                 'currency' =>
                 $validated['currency'],
 
+                'service_charge' =>
+                $validated['service_charge'] ?? 0,
+
+                'other_tax_charge' =>
+                $validated['other_tax_charge'] ?? 0,
+
                 'tax_percent' =>
                 $validated['tax_percent'] ?? 0,
 
                 'other_charges' =>
                 $validated['other_charges'] ?? 0,
+
+                'grand_total' => round($grandTotal, 2),
 
                 'ordered_by' =>
                 $validated['ordered_by'] ?? null,
@@ -845,6 +905,109 @@ class PurchaseOrderController extends Controller
 
             return response()->json([
                 'message' => 'Unable to generate PDF.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+
+    public function templatePdf()
+    {
+
+        $html = view(
+            'purchase_orders.template'
+        )->render();
+
+        // Remove non-breaking spaces
+        $html = str_replace("\xc2\xa0", ' ', $html);
+
+        try {
+
+            $tempDir = storage_path('app/mpdf');
+
+            if (!is_dir($tempDir)) {
+                mkdir($tempDir, 0755, true);
+            }
+
+            $mpdf = new Mpdf([
+                'mode' => 'utf-8',
+
+                // Same as your existing Purchase Order PDF
+                'format' => 'A4',
+                'orientation' => 'P',
+
+                'margin_left' => 6,
+                'margin_right' => 6,
+                'margin_top' => 5,
+                'margin_bottom' => 6,
+
+                'autoScriptToLang' => true,
+                'autoLangToFont' => true,
+
+                'tempDir' => $tempDir,
+            ]);
+
+
+
+            $mpdf->SetTitle(
+                'Purchase Order FM02-11 Template'
+            );
+
+            $mpdf->SetAuthor(
+                config('app.name')
+            );
+
+            $mpdf->SetDisplayMode('fullpage');
+
+            $logo = public_path('images/logo.png');
+
+            if (file_exists($logo)) {
+
+                $mpdf->SetWatermarkImage(
+                    $logo,
+                    0.06,
+                    [150, 100],
+                    [30, 80]
+                );
+
+                $mpdf->showWatermarkImage = true;
+                $mpdf->watermarkImgBehind = true;
+            }
+
+
+            $mpdf->WriteHTML(
+                $html,
+                HTMLParserMode::DEFAULT_MODE
+            );
+
+
+            $filename = 'Purchase_Order_FM02-11_Template.pdf';
+
+            $pdf = $mpdf->Output(
+                $filename,
+                Destination::STRING_RETURN
+            );
+
+
+            return response($pdf, 200, [
+                'Content-Type' => 'application/pdf',
+
+                'Content-Disposition' =>
+                'inline; filename="' . $filename . '"',
+            ]);
+        } catch (\Throwable $e) {
+
+            Log::error(
+                'Purchase Order Template PDF Error',
+                [
+                    'message' => $e->getMessage(),
+                    'line' => $e->getLine(),
+                    'file' => $e->getFile(),
+                ]
+            );
+
+            return response()->json([
+                'message' => 'Unable to generate Purchase Order template.',
                 'error' => $e->getMessage(),
             ], 500);
         }

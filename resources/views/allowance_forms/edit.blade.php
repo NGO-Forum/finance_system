@@ -38,12 +38,51 @@
                 <!-- Section 1: Top Metadata Grid -->
                 <div
                     class="grid grid-cols-1 md:grid-cols-6 gap-4 bg-slate-50 p-5 rounded-xl border border-slate-200/80 mb-6 text-sm shadow-xs">
-                    <div class="col-span-5">
+
+                    <div class="col-span-2">
+
+                        <label for="attendant_list_id"
+                            class="block font-bold text-slate-600 mb-2 tracking-wide uppercase text-sm">
+                            Attendant List
+                        </label>
+                        <select name="attendant_list_id" id="attendant_list_id"
+                            class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2
+                                transition focus:border-green-700 focus:ring-1
+                                focus:ring-green-700 text-slate-800 shadow-xs">
+
+                            <option value="">
+                                Select Attendant List
+                            </option>
+
+                            @foreach ($attendantLists as $attendantList)
+                                <option value="{{ $attendantList->id }}" data-activity="{{ $attendantList->title }}"
+                                    data-start-date="{{ $attendantList->start_date?->format('Y-m-d') }}"
+                                    data-end-date="{{ $attendantList->end_date?->format('Y-m-d') }}"
+                                    data-venue="{{ $attendantList->venue }}" @selected(old('attendant_list_id', $allowanceForm->attendant_list_id) == $attendantList->id)>
+                                    {{ $attendantList->title }}
+                                </option>
+                            @endforeach
+
+                        </select>
+
+                        @error('attendant_list_id')
+                            <p class="mt-1 text-sm text-red-600">
+                                {{ $message }}
+                            </p>
+                        @enderror
+
+                    </div>
+
+                    <div class="col-span-3">
                         <label class="block font-bold text-slate-600 mb-2 tracking-wide uppercase text-sm">For Activity
                             *</label>
-                        <input type="text" name="activity" value="{{ old('activity', $allowanceForm->activity) }}"
-                            class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 transition focus:border-green-700 focus:ring-1 focus:ring-green-700 text-slate-800 shadow-xs"
+                        <input type="text" name="activity" id="activity"
+                            value="{{ old('activity', $allowanceForm->activity) }}"
+                            class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2
+                                    transition focus:border-green-700 focus:ring-1
+                                    focus:ring-green-700 text-slate-800 shadow-xs"
                             placeholder="Activity description..." required>
+
                     </div>
                     <div>
                         <label class="block font-bold text-slate-600 mb-2 tracking-wide uppercase text-sm">
@@ -451,199 +490,1319 @@
     <script>
         function allowanceMatrix() {
 
-            const startDateInput = document.getElementById('start_date');
-            const endDateInput = document.getElementById('end_date');
+            /*
+            |--------------------------------------------------------------------------
+            | DOM ELEMENTS
+            |--------------------------------------------------------------------------
+            */
+
+            const startDateInput =
+                document.getElementById('start_date');
+
+            const endDateInput =
+                document.getElementById('end_date');
+
+            const attendantListSelect =
+                document.getElementById('attendant_list_id');
+
+            const activityInput =
+                document.getElementById('activity');
+
+            const venueInput =
+                document.getElementById('venue');
+
 
             return {
 
+                /*
+                |--------------------------------------------------------------------------
+                | INITIAL DATA
+                |--------------------------------------------------------------------------
+                */
+
                 dates: @json(old('dates', $allowanceForm->dates ?? [])),
-                participants: @json($participants ?? []),
+
+                participants: @json(old('participants', $participants ?? [])),
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | INITIALIZE
+                |--------------------------------------------------------------------------
+                */
 
                 init() {
 
-                    // Generate dates from Start & End Date
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Generate dates from existing Start Date / End Date
+                    |--------------------------------------------------------------------------
+                    */
+
                     this.generateDates();
 
-                    // Create one participant if empty
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Make sure participants is an array
+                    |--------------------------------------------------------------------------
+                    */
+
+                    if (!Array.isArray(this.participants)) {
+                        this.participants = [];
+                    }
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Normalize existing participants
+                    |--------------------------------------------------------------------------
+                    */
+
+                    this.participants =
+                        this.participants.map(participant => {
+
+                            return this.normalizeParticipant(
+                                participant
+                            );
+
+                        });
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | If no participants, add one empty participant
+                    |--------------------------------------------------------------------------
+                    */
+
                     if (this.participants.length === 0) {
+
                         this.addParticipant();
+
                     }
 
-                    // Ensure every participant has enough cost objects
-                    this.participants.forEach(p => {
 
-                        if (!Array.isArray(p.costs)) {
-                            p.costs = [];
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Start Date Changed
+                    |--------------------------------------------------------------------------
+                    */
+
+                    startDateInput?.addEventListener(
+                        'change',
+                        () => {
+
+                            this.generateDates();
+
                         }
+                    );
 
-                        while (p.costs.length < this.dates.length) {
-                            p.costs.push(this.emptyCost());
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | End Date Changed
+                    |--------------------------------------------------------------------------
+                    */
+
+                    endDateInput?.addEventListener(
+                        'change',
+                        () => {
+
+                            this.generateDates();
+
                         }
+                    );
 
-                        while (p.costs.length > this.dates.length) {
-                            p.costs.pop();
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Attendant List Changed
+                    |--------------------------------------------------------------------------
+                    */
+
+                    attendantListSelect?.addEventListener(
+                        'change',
+                        () => {
+
+                            this.attendantListChanged();
+
                         }
-
-                    });
-
-                    startDateInput?.addEventListener('change', () => {
-                        this.generateDates();
-                    });
-
-                    endDateInput?.addEventListener('change', () => {
-                        this.generateDates();
-                    });
+                    );
 
                 },
 
-                generateDates() {
 
-                    if (!startDateInput?.value || !endDateInput?.value) {
-                        return;
+                /*
+                |--------------------------------------------------------------------------
+                | NORMALIZE PARTICIPANT
+                |--------------------------------------------------------------------------
+                */
+
+                normalizeParticipant(participant) {
+
+                    const costs = [];
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Existing Costs
+                    |--------------------------------------------------------------------------
+                    */
+
+                    if (
+                        Array.isArray(
+                            participant.costs
+                        )
+                    ) {
+
+                        participant.costs.forEach(cost => {
+
+                            costs.push({
+
+                                breakfast: Number(
+                                    cost?.breakfast
+                                ) || 0,
+
+                                lunch: Number(
+                                    cost?.lunch
+                                ) || 0,
+
+                                dinner: Number(
+                                    cost?.dinner
+                                ) || 0,
+
+                                accommodation: Number(
+                                    cost?.accommodation
+                                ) || 0,
+
+                                taxi: Number(
+                                    cost?.taxi
+                                ) || 0,
+
+                                local_transport: Number(
+                                    cost?.local_transport
+                                ) || 0
+
+                            });
+
+                        });
+
                     }
 
-                    const newDates = [];
 
-                    let current = new Date(startDateInput.value);
-                    const end = new Date(endDateInput.value);
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Match Costs To Dates
+                    |--------------------------------------------------------------------------
+                    */
 
-                    while (current <= end) {
-                        newDates.push(current.toISOString().split('T')[0]);
-                        current.setDate(current.getDate() + 1);
+                    while (
+                        costs.length <
+                        this.dates.length
+                    ) {
+
+                        costs.push(
+                            this.emptyCost()
+                        );
+
                     }
 
-                    this.dates = newDates;
 
-                    this.participants.forEach(p => {
+                    while (
+                        costs.length >
+                        this.dates.length
+                    ) {
 
-                        if (!Array.isArray(p.costs)) {
-                            p.costs = [];
-                        }
+                        costs.pop();
 
-                        while (p.costs.length < this.dates.length) {
-                            p.costs.push(this.emptyCost());
-                        }
+                    }
 
-                        while (p.costs.length > this.dates.length) {
-                            p.costs.pop();
-                        }
 
-                    });
+                    return {
+
+                        registration_id: participant.registration_id ??
+                            participant.id ??
+                            null,
+
+                        name: participant.name ??
+                            participant.full_name ??
+                            '',
+
+                        organization: participant.organization ??
+                            participant.institution ??
+                            '',
+
+                        position: participant.position ??
+                            '',
+
+                        gender: this.normalizeGender(
+                            participant.gender
+                        ),
+
+                        province: participant.province ??
+                            '',
+
+                        distance: Number(
+                            participant.distance
+                        ) || 0,
+
+                        remarks: participant.remarks ??
+                            participant.remark ??
+                            '',
+
+                        costs: costs
+
+                    };
 
                 },
 
-                formatDate(date) {
 
-                    if (!date) return '';
+                /*
+                |--------------------------------------------------------------------------
+                | NORMALIZE GENDER
+                |--------------------------------------------------------------------------
+                */
 
-                    return new Date(date).toLocaleDateString('en-GB', {
-                        day: '2-digit',
-                        month: 'short'
-                    });
+                normalizeGender(gender) {
+
+                    if (!gender) {
+                        return 'M';
+                    }
+
+                    const value =
+                        String(gender)
+                        .trim()
+                        .toLowerCase();
+
+
+                    if (
+                        value === 'f' ||
+                        value === 'female' ||
+                        value === 'woman' ||
+                        value === 'women'
+                    ) {
+
+                        return 'F';
+
+                    }
+
+
+                    return 'M';
 
                 },
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | EMPTY COST
+                |--------------------------------------------------------------------------
+                */
 
                 emptyCost() {
 
                     return {
+
                         breakfast: 0,
+
                         lunch: 0,
+
                         dinner: 0,
+
                         accommodation: 0,
+
                         taxi: 0,
+
                         local_transport: 0
+
                     };
 
                 },
 
-                emptyParticipant(costMatrix) {
+
+                /*
+                |--------------------------------------------------------------------------
+                | EMPTY PARTICIPANT
+                |--------------------------------------------------------------------------
+                */
+
+                emptyParticipant() {
+
+                    const costs = [];
+
+                    this.dates.forEach(() => {
+
+                        costs.push(
+                            this.emptyCost()
+                        );
+
+                    });
+
 
                     return {
+
+                        registration_id: null,
+
                         name: '',
+
                         organization: '',
+
                         position: '',
+
                         gender: 'M',
+
                         province: '',
+
                         distance: 0,
+
                         remarks: '',
-                        costs: costMatrix
+
+                        costs: costs
+
                     };
 
                 },
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | ADD PARTICIPANT
+                |--------------------------------------------------------------------------
+                */
 
                 addParticipant() {
 
-                    const costMatrix = [];
-
-                    this.dates.forEach(() => {
-                        costMatrix.push(this.emptyCost());
-                    });
-
-                    this.participants.push(this.emptyParticipant(costMatrix));
+                    this.participants.push(
+                        this.emptyParticipant()
+                    );
 
                 },
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | REMOVE PARTICIPANT
+                |--------------------------------------------------------------------------
+                */
 
                 removeParticipant(index) {
 
-                    if (this.participants.length <= 1) {
+                    if (
+                        this.participants.length <= 1
+                    ) {
 
                         Swal.fire({
+
                             icon: 'warning',
+
                             title: 'Cannot Remove',
+
                             text: 'At least one participant is required.'
+
                         });
 
                         return;
+
                     }
 
-                    this.participants.splice(index, 1);
+
+                    Swal.fire({
+
+                        icon: 'warning',
+
+                        title: 'Remove Participant?',
+
+                        text: 'Are you sure you want to remove this participant?',
+
+                        showCancelButton: true,
+
+                        confirmButtonText: 'Yes, remove',
+
+                        cancelButtonText: 'Cancel',
+
+                        confirmButtonColor: '#dc2626'
+
+                    }).then(result => {
+
+                        if (result.isConfirmed) {
+
+                            this.participants.splice(
+                                index,
+                                1
+                            );
+
+                        }
+
+                    });
 
                 },
 
-                sumCategory(p, category) {
 
-                    return p.costs.reduce((sum, day) => {
-                        return sum + (parseFloat(day[category]) || 0);
-                    }, 0);
+                /*
+                |--------------------------------------------------------------------------
+                | GENERATE DATES
+                |--------------------------------------------------------------------------
+                */
+
+                generateDates() {
+
+                    if (
+                        !startDateInput?.value ||
+                        !endDateInput?.value
+                    ) {
+
+                        this.dates = [];
+
+                        return;
+
+                    }
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | IMPORTANT:
+                    | Do NOT use toISOString().
+                    | It can change 26/08 into 25/08 because of UTC.
+                    |--------------------------------------------------------------------------
+                    */
+
+                    const newDates = [];
+
+
+                    let current =
+                        this.parseLocalDate(
+                            startDateInput.value
+                        );
+
+
+                    const end =
+                        this.parseLocalDate(
+                            endDateInput.value
+                        );
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Validate date range
+                    |--------------------------------------------------------------------------
+                    */
+
+                    if (
+                        !current ||
+                        !end ||
+                        current > end
+                    ) {
+
+                        this.dates = [];
+
+                        return;
+
+                    }
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Generate every date
+                    |--------------------------------------------------------------------------
+                    */
+
+                    while (
+                        current <= end
+                    ) {
+
+                        const year =
+                            current.getFullYear();
+
+                        const month =
+                            String(
+                                current.getMonth() + 1
+                            ).padStart(2, '0');
+
+                        const day =
+                            String(
+                                current.getDate()
+                            ).padStart(2, '0');
+
+
+                        newDates.push(
+                            `${year}-${month}-${day}`
+                        );
+
+
+                        current.setDate(
+                            current.getDate() + 1
+                        );
+
+                    }
+
+
+                    this.dates =
+                        newDates;
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Resize participant cost arrays
+                    |--------------------------------------------------------------------------
+                    */
+
+                    this.participants.forEach(
+                        participant => {
+
+                            if (
+                                !Array.isArray(
+                                    participant.costs
+                                )
+                            ) {
+
+                                participant.costs = [];
+
+                            }
+
+
+                            while (
+                                participant.costs.length <
+                                this.dates.length
+                            ) {
+
+                                participant.costs.push(
+                                    this.emptyCost()
+                                );
+
+                            }
+
+
+                            while (
+                                participant.costs.length >
+                                this.dates.length
+                            ) {
+
+                                participant.costs.pop();
+
+                            }
+
+                        }
+                    );
 
                 },
 
-                calculateParticipantTotal(p) {
+
+                /*
+                |--------------------------------------------------------------------------
+                | PARSE LOCAL DATE
+                |--------------------------------------------------------------------------
+                */
+
+                parseLocalDate(dateString) {
+
+                    if (!dateString) {
+                        return null;
+                    }
+
+
+                    const parts =
+                        String(dateString)
+                        .split('-');
+
+
+                    if (
+                        parts.length !== 3
+                    ) {
+
+                        return null;
+
+                    }
+
+
+                    const year =
+                        Number(parts[0]);
+
+                    const month =
+                        Number(parts[1]) - 1;
+
+                    const day =
+                        Number(parts[2]);
+
+
+                    const date =
+                        new Date(
+                            year,
+                            month,
+                            day
+                        );
+
+
+                    return isNaN(
+                            date.getTime()
+                        ) ?
+                        null :
+                        date;
+
+                },
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | FORMAT DATE
+                |--------------------------------------------------------------------------
+                */
+
+                formatDate(date) {
+
+                    if (!date) {
+                        return '';
+                    }
+
+
+                    const parts =
+                        String(date)
+                        .split('-');
+
+
+                    if (
+                        parts.length !== 3
+                    ) {
+
+                        return '';
+
+                    }
+
+
+                    const day =
+                        parts[2];
+
+                    const month =
+                        parts[1];
+
+
+                    return `${day}/${month}`;
+
+                },
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | ATTENDANT LIST CHANGED
+                |--------------------------------------------------------------------------
+                */
+
+                async attendantListChanged() {
+
+                    if (
+                        !attendantListSelect
+                    ) {
+
+                        return;
+
+                    }
+
+
+                    const selectedOption =
+                        attendantListSelect.options[
+                            attendantListSelect.selectedIndex
+                        ];
+
+
+                    if (
+                        !selectedOption ||
+                        !selectedOption.value
+                    ) {
+
+                        return;
+
+                    }
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Activity
+                    |--------------------------------------------------------------------------
+                    */
+
+                    const activity =
+                        selectedOption.dataset.activity ||
+                        '';
+
+
+                    if (
+                        activityInput &&
+                        activity
+                    ) {
+
+                        activityInput.value =
+                            activity;
+
+                    }
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Venue
+                    |--------------------------------------------------------------------------
+                    */
+
+                    const venue =
+                        selectedOption.dataset.venue ||
+                        '';
+
+
+                    if (
+                        venueInput &&
+                        venue
+                    ) {
+
+                        venueInput.value =
+                            venue;
+
+                    }
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Start Date
+                    |--------------------------------------------------------------------------
+                    */
+
+                    const startDate =
+                        selectedOption.dataset.startDate ||
+                        '';
+
+
+                    if (
+                        startDateInput &&
+                        startDate
+                    ) {
+
+                        startDateInput.value =
+                            startDate;
+
+                    }
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | End Date
+                    |--------------------------------------------------------------------------
+                    */
+
+                    const endDate =
+                        selectedOption.dataset.endDate ||
+                        '';
+
+
+                    if (
+                        endDateInput &&
+                        endDate
+                    ) {
+
+                        endDateInput.value =
+                            endDate;
+
+                    }
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Regenerate Dates
+                    |--------------------------------------------------------------------------
+                    */
+
+                    this.generateDates();
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Load DSA Participants
+                    |--------------------------------------------------------------------------
+                    */
+
+                    await this.loadDSAParticipants();
+
+                },
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | LOAD DSA PARTICIPANTS
+                |--------------------------------------------------------------------------
+                */
+
+                async loadDSAParticipants() {
+
+                    if (
+                        !attendantListSelect
+                    ) {
+
+                        return;
+
+                    }
+
+
+                    const attendantListId =
+                        attendantListSelect.value;
+
+
+                    if (!attendantListId) {
+
+                        return;
+
+                    }
+
+
+                    try {
+
+                        /*
+                        |--------------------------------------------------------------------------
+                        | Show Loading
+                        |--------------------------------------------------------------------------
+                        */
+
+                        Swal.fire({
+
+                            title: 'Loading Participants...',
+
+                            text: 'Please wait while DSA participants are loaded.',
+
+                            allowOutsideClick: false,
+
+                            allowEscapeKey: false,
+
+                            didOpen: () => {
+
+                                Swal.showLoading();
+
+                            }
+
+                        });
+
+
+                        /*
+                        |--------------------------------------------------------------------------
+                        | Request
+                        |--------------------------------------------------------------------------
+                        */
+
+                        const response =
+                            await fetch(
+                                `/attendant-lists/${attendantListId}/dsa-participants`, {
+                                    method: 'GET',
+
+                                    headers: {
+
+                                        'Accept': 'application/json',
+
+                                        'X-Requested-With': 'XMLHttpRequest'
+
+                                    }
+
+                                }
+                            );
+
+
+                        /*
+                        |--------------------------------------------------------------------------
+                        | Check HTTP Status
+                        |--------------------------------------------------------------------------
+                        */
+
+                        if (
+                            !response.ok
+                        ) {
+
+                            throw new Error(
+                                `HTTP ${response.status}`
+                            );
+
+                        }
+
+
+                        const result =
+                            await response.json();
+
+
+                        /*
+                        |--------------------------------------------------------------------------
+                        | Extract Participants
+                        |--------------------------------------------------------------------------
+                        */
+
+                        let registrations = [];
+
+
+                        if (
+                            Array.isArray(result)
+                        ) {
+
+                            registrations =
+                                result;
+
+                        } else if (
+                            Array.isArray(
+                                result.participants
+                            )
+                        ) {
+
+                            registrations =
+                                result.participants;
+
+                        } else if (
+                            Array.isArray(
+                                result.registrations
+                            )
+                        ) {
+
+                            registrations =
+                                result.registrations;
+
+                        }
+
+
+                        /*
+                        |--------------------------------------------------------------------------
+                        | No Participants
+                        |--------------------------------------------------------------------------
+                        */
+
+                        if (
+                            registrations.length === 0
+                        ) {
+
+                            Swal.close();
+
+
+                            await Swal.fire({
+
+                                icon: 'info',
+
+                                title: 'No DSA Participants',
+
+                                text: 'No DSA registration was found for this Attendant List.',
+
+                                confirmButtonColor: '#16a34a'
+
+                            });
+
+                            return;
+
+                        }
+
+
+                        /*
+                        |--------------------------------------------------------------------------
+                        | Convert Registrations
+                        |--------------------------------------------------------------------------
+                        */
+
+                        this.participants =
+                            registrations.map(
+                                registration => {
+
+                                    const participant =
+                                        this.normalizeParticipant({
+
+                                            registration_id: registration.registration_id ??
+                                                registration.id ??
+                                                null,
+
+                                            name: registration.name ??
+                                                registration.full_name ??
+                                                '',
+
+                                            organization: registration.organization ??
+                                                registration.institution ??
+                                                '',
+
+                                            position: registration.position ??
+                                                '',
+
+                                            gender: registration.gender ??
+                                                'M',
+
+                                            province: registration.province ??
+                                                '',
+
+                                            distance: registration.distance ??
+                                                0,
+
+                                            remarks: registration.remarks ??
+                                                registration.remark ??
+                                                '',
+
+                                            costs: []
+
+                                        });
+
+
+                                    /*
+                                    |--------------------------------------------------------------------------
+                                    | Reset Costs For Newly Loaded Participants
+                                    |--------------------------------------------------------------------------
+                                    */
+
+                                    participant.costs =
+                                        this.dates.map(
+                                            () => this.emptyCost()
+                                        );
+
+
+                                    return participant;
+
+                                }
+                            );
+
+
+                        /*
+                        |--------------------------------------------------------------------------
+                        | Close Loading
+                        |--------------------------------------------------------------------------
+                        */
+
+                        Swal.close();
+
+
+                        /*
+                        |--------------------------------------------------------------------------
+                        | Success
+                        |--------------------------------------------------------------------------
+                        */
+
+                        await Swal.fire({
+
+                            icon: 'success',
+
+                            title: 'Participants Loaded',
+
+                            text: `${this.participants.length} DSA participant(s) loaded.`,
+
+                            timer: 1500,
+
+                            showConfirmButton: false
+
+                        });
+
+
+                    } catch (error) {
+
+                        console.error(
+                            'DSA participant loading error:',
+                            error
+                        );
+
+
+                        Swal.close();
+
+
+                        await Swal.fire({
+
+                            icon: 'error',
+
+                            title: 'Unable to Load Participants',
+
+                            text: error.message ||
+                                'Something went wrong while loading participants.',
+
+                            confirmButtonColor: '#dc2626'
+
+                        });
+
+                    }
+
+                },
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | SUM CATEGORY
+                |--------------------------------------------------------------------------
+                */
+
+                sumCategory(
+                    participant,
+                    category
+                ) {
+
+                    if (
+                        !participant ||
+                        !Array.isArray(
+                            participant.costs
+                        )
+                    ) {
+
+                        return 0;
+
+                    }
+
+
+                    return participant.costs.reduce(
+                        (
+                            sum,
+                            day
+                        ) => {
+
+                            return sum +
+                                (
+                                    parseFloat(
+                                        day?.[category]
+                                    ) || 0
+                                );
+
+                        },
+                        0
+                    );
+
+                },
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | CALCULATE PARTICIPANT TOTAL
+                |--------------------------------------------------------------------------
+                */
+
+                calculateParticipantTotal(
+                    participant
+                ) {
+
+                    if (!participant) {
+                        return 0;
+                    }
+
 
                     return [
+
                         'breakfast',
+
                         'lunch',
+
                         'dinner',
+
                         'accommodation',
+
                         'taxi',
+
                         'local_transport'
-                    ].reduce((sum, category) => {
-                        return sum + this.sumCategory(p, category);
-                    }, 0);
+
+                    ].reduce(
+                        (
+                            total,
+                            category
+                        ) => {
+
+                            return total +
+                                this.sumCategory(
+                                    participant,
+                                    category
+                                );
+
+                        },
+                        0
+                    );
 
                 },
 
-                grandCategoryTotal(category) {
 
-                    return this.participants.reduce((sum, p) => {
-                        return sum + this.sumCategory(p, category);
-                    }, 0);
+                /*
+                |--------------------------------------------------------------------------
+                | GRAND CATEGORY TOTAL
+                |--------------------------------------------------------------------------
+                */
+
+                grandCategoryTotal(
+                    category
+                ) {
+
+                    if (
+                        !Array.isArray(
+                            this.participants
+                        )
+                    ) {
+
+                        return 0;
+
+                    }
+
+
+                    return this.participants.reduce(
+                        (
+                            total,
+                            participant
+                        ) => {
+
+                            return total +
+                                this.sumCategory(
+                                    participant,
+                                    category
+                                );
+
+                        },
+                        0
+                    );
 
                 },
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | GRAND FOOD TOTAL
+                |--------------------------------------------------------------------------
+                */
 
                 grandFoodTotal() {
 
-                    return this.grandCategoryTotal('breakfast') +
-                        this.grandCategoryTotal('lunch') +
-                        this.grandCategoryTotal('dinner');
+                    return (
+
+                        this.grandCategoryTotal(
+                            'breakfast'
+                        )
+
+                        +
+
+                        this.grandCategoryTotal(
+                            'lunch'
+                        )
+
+                        +
+
+                        this.grandCategoryTotal(
+                            'dinner'
+                        )
+
+                    );
 
                 },
 
+
+                /*
+                |--------------------------------------------------------------------------
+                | GRAND FORM TOTAL
+                |--------------------------------------------------------------------------
+                */
+
                 grandFormTotal() {
 
-                    return this.participants.reduce((sum, p) => {
-                        return sum + this.calculateParticipantTotal(p);
-                    }, 0);
+                    if (
+                        !Array.isArray(
+                            this.participants
+                        )
+                    ) {
+
+                        return 0;
+
+                    }
+
+
+                    return this.participants.reduce(
+                        (
+                            total,
+                            participant
+                        ) => {
+
+                            return total +
+                                this.calculateParticipantTotal(
+                                    participant
+                                );
+
+                        },
+                        0
+                    );
 
                 }
 

@@ -22,14 +22,14 @@
 
                 <div class="flex gap-3 mt-4 md:mt-0">
 
-                    <a href="{{ route('purchase-requests.index') }}"
-                        class="px-5 py-2 rounded-lg bg-white text-gray-700 hover:bg-gray-100 font-medium">
+                    @if (auth()->user()->role?->name === 'Admin' || auth()->id() == $purchaseRequest->prepared_by)
+                        <a href="{{ route('purchase-requests.index') }}"
+                            class="px-5 py-2 rounded-lg bg-white text-gray-700 hover:bg-gray-100 font-medium">
 
-                        ← Back
+                            ← Back
 
-                    </a>
+                        </a>
 
-                    @if (auth()->id() == $purchaseRequest->prepared_by || auth()->user()->role?->name == 'Admin')
                         <a href="{{ route('purchase-requests.edit', $purchaseRequest) }}"
                             class="px-5 py-2 rounded-lg bg-yellow-400 hover:bg-yellow-500 text-white font-medium">
 
@@ -37,7 +37,6 @@
 
                         </a>
                     @endif
-
                 </div>
 
             </div>
@@ -304,7 +303,7 @@
                                     <span​ class="text-gray-600 line-clamp-1">
 
                                         {{ $item->specification ?: '-' }}
-                                    </span>
+                                        </span>
 
                                 </td>
 
@@ -414,15 +413,14 @@
 
         {{-- Footer Buttons --}}
         <div class="flex flex-wrap justify-end gap-3 no-print">
+            @if (auth()->user()->role?->name === 'Admin' || auth()->id() == $purchaseRequest->prepared_by)
+                <a href="{{ route('purchase-requests.index') }}"
+                    class="px-6 py-3 rounded-xl bg-gray-500 hover:bg-gray-600 text-white">
 
-            <a href="{{ route('purchase-requests.index') }}"
-                class="px-6 py-3 rounded-xl bg-gray-500 hover:bg-gray-600 text-white">
+                    ← Back
 
-                ← Back
+                </a>
 
-            </a>
-
-            @if (auth()->id() == $purchaseRequest->prepared_by || auth()->user()->role?->name == 'Admin')
                 <a href="{{ route('purchase-requests.edit', $purchaseRequest) }}"
                     class="px-6 py-3 rounded-xl bg-yellow-500 hover:bg-yellow-600 text-white">
 
@@ -431,7 +429,105 @@
                 </a>
             @endif
 
+            @if (auth()->user()->role?->name === 'Manager' &&
+                    (int) $purchaseRequest->reviewed_by === (int) auth()->id() &&
+                    $purchaseRequest->status === 'Pending Manager Approval')
+                <form method="POST" action="{{ route('purchase-requests.approve', $purchaseRequest) }}"
+                    class="inline approve-form">
+
+                    @csrf
+
+                    <button type="submit"
+                        class="px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white transition">
+
+                        👁 Review
+
+                    </button>
+
+                </form>
+            @endif
+
+
+
+            {{-- ========================================================= --}}
+            {{-- ED: APPROVE --}}
+            {{-- ========================================================= --}}
+
+            @if (auth()->user()->role?->name === 'ED' &&
+                    (int) $purchaseRequest->approved_by === (int) auth()->id() &&
+                    $purchaseRequest->status === 'Pending ED Approval')
+                <form method="POST" action="{{ route('purchase-requests.approve', $purchaseRequest) }}"
+                    class="inline approve-form">
+
+                    @csrf
+
+                    <button type="submit"
+                        class="px-6 py-3 rounded-xl bg-green-600 hover:bg-green-700 text-white transition">
+
+                        ✓ Approve
+
+                    </button>
+
+                </form>
+            @endif
+
         </div>
 
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+
+            document.querySelectorAll('.approve-form').forEach(function(form) {
+
+                form.addEventListener('submit', function(e) {
+
+                    e.preventDefault();
+
+                    const isManager = form.querySelector('button').textContent.includes('Review');
+                    const title = isManager ?
+                        'Review Purchase Request?' :
+                        'Approve Purchase Request?';
+
+                    const text = isManager ?
+                        'Are you sure you want to approve this Purchase Request and send it to Finance?' :
+                        'Are you sure you want to give final approval and send this request to Finance?';
+
+                    Swal.fire({
+                        title: title,
+                        text: text,
+                        icon: 'warning',
+
+                        showCancelButton: true,
+
+                        confirmButtonText: 'Yes, Approve',
+                        cancelButtonText: 'Cancel',
+
+                        confirmButtonColor: '#16a34a',
+                        cancelButtonColor: '#6b7280',
+
+                        reverseButtons: true,
+
+                        focusCancel: true
+                    }).then((result) => {
+
+                        if (result.isConfirmed) {
+
+                            // Prevent double click
+                            const button = form.querySelector('button');
+
+                            button.disabled = true;
+                            button.innerHTML = '⏳ Processing...';
+
+                            form.submit();
+                        }
+
+                    });
+
+                });
+
+            });
+
+        });
+    </script>
 @endsection

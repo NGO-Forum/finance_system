@@ -16,12 +16,6 @@ class InvoiceController extends Controller
     public function index(Request $request)
     {
         $invoices = Invoice::query()
-
-            ->where(
-                'created_by',
-                auth()->id()
-            )
-
             ->when($request->invoice_no, function ($query, $value) {
                 $query->where(
                     'invoice_no',
@@ -46,7 +40,7 @@ class InvoiceController extends Controller
             })
 
             ->latest('id')
-            ->paginate(15);
+            ->paginate(10);
 
         return view(
             'invoices.index',
@@ -490,6 +484,95 @@ class InvoiceController extends Controller
 
             return response()->json([
                 'message' => 'Unable to generate Invoice PDF.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+
+    public function template()
+    {
+        try {
+            $tempDir = storage_path('app/mpdf');
+
+            if (!is_dir($tempDir)) {
+                mkdir($tempDir, 0755, true);
+            }
+
+            $mpdf = new Mpdf([
+                'mode' => 'utf-8',
+                'format' => 'A4',
+                'orientation' => 'P',
+
+                'margin_left' => 6,
+                'margin_right' => 6,
+                'margin_top' => 6,
+                'margin_bottom' => 6,
+
+                'autoScriptToLang' => true,
+                'autoLangToFont' => true,
+
+                'tempDir' => $tempDir,
+            ]);
+
+
+            $logo = public_path('images/logo.png');
+
+            if (file_exists($logo)) {
+                $mpdf->SetWatermarkImage(
+                    $logo,
+                    0.06,
+                    [120, 80],
+                    [45, 100]
+                );
+
+                $mpdf->showWatermarkImage = true;
+                $mpdf->watermarkImgBehind = true;
+            }
+
+            $html = view('invoices.template')->render();
+
+            $html = str_replace(
+                "\xc2\xa0",
+                ' ',
+                $html
+            );
+
+            $mpdf->SetTitle('Invoice Template');
+
+            $mpdf->SetAuthor(
+                'NGO Forum on Cambodia'
+            );
+
+            $mpdf->WriteHTML($html);
+
+            $filename = 'Invoice-Template.pdf';
+
+            return response(
+                $mpdf->Output(
+                    $filename,
+                    Destination::STRING_RETURN
+                ),
+                200,
+                [
+                    'Content-Type' => 'application/pdf',
+                    'Content-Disposition' =>
+                    'inline; filename="' .
+                        $filename .
+                        '"',
+                ]
+            );
+        } catch (\Throwable $e) {
+
+            Log::error('Invoice Template PDF Error', [
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
+            ]);
+
+            return response()->json([
+                'message' =>
+                'Unable to generate Invoice template.',
                 'error' => $e->getMessage(),
             ], 500);
         }

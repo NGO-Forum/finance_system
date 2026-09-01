@@ -76,7 +76,8 @@
 
                             </span>
 
-                            {{ \Carbon\Carbon::parse($attendantList->activity_date)->format('D, d M Y') }}
+                            {{ \Carbon\Carbon::parse($attendantList->start_date)->format('d M Y') }} -
+                            {{ \Carbon\Carbon::parse($attendantList->end_date)->format('d M Y') }}
 
                         </div>
 
@@ -105,11 +106,11 @@
 
                             </span>
 
-                            {{ $attendantList->start_time ?? '7:30 AM' }}
+                            {{ $attendantList->start_time ? \Carbon\Carbon::parse($attendantList->start_time)->format('g:i A') : '7:30 AM' }}
 
                             -
 
-                            {{ $attendantList->end_time ?? '5:00 PM' }}
+                            {{ $attendantList->end_time ? \Carbon\Carbon::parse($attendantList->end_time)->format('g:i A') : '5:00 PM' }}
 
                         </div>
 

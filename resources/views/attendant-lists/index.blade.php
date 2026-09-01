@@ -218,7 +218,7 @@
                                 {{-- Date --}}
                                 <td class="px-6 py-2 text-center">
 
-                                    {{ $list->activity_date->format('d M Y') }}
+                                    {{ $list->start_date->format('d M Y') }}
 
                                 </td>
 
@@ -295,7 +295,7 @@
                                     </button>
 
                                     <div id="menu-{{ $list->id }}"
-                                        class="absolute right-6 z-50 -mt-4 hidden w-28 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl">
+                                        class="absolute right-6 z-50 -mt-4 hidden w-14 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl">
 
                                         <a href="{{ route('attendant-registrations.index', $list) }}"
                                             class="flex items-center gap-3 px-4 py-3 text-sm text-green-600 hover:bg-green-50 hover:text-green-700">
@@ -307,8 +307,6 @@
                                                     d="M17 20h5V4H2v16h5m10 0v-2a4 4 0 00-8 0v2m8 0H9m4-10a4 4 0 11-8 0 4 4 0 018 0z" />
 
                                             </svg>
-
-                                            View
 
                                         </a>
 
@@ -323,8 +321,6 @@
 
                                             </svg>
 
-                                            Edit
-
                                         </a>
 
                                         <button onclick="deleteItem({{ $list->id }})"
@@ -337,8 +333,6 @@
                                                     d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3m-7 0h8" />
 
                                             </svg>
-
-                                            Delete
 
                                         </button>
 

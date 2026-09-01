@@ -10,10 +10,12 @@ class AttendantList extends Model
 
         'title',
 
-        'activity_date',
+        'start_date',
+
+        'end_date',
 
         'start_time',
-        
+
         'end_time',
 
         'venue',
@@ -21,6 +23,8 @@ class AttendantList extends Model
         'donor_logo_id',
 
         'registration_enabled',
+
+        'registration_closed_at',
 
         'registration_token',
 
@@ -35,11 +39,10 @@ class AttendantList extends Model
     ];
 
     protected $casts = [
-
-        'activity_date' => 'date',
-
+        'start_date' => 'date',
+        'end_date' => 'date',
         'registration_enabled' => 'boolean',
-
+        'registration_closed_at' => 'datetime',
     ];
 
 
@@ -75,6 +78,14 @@ class AttendantList extends Model
         return max(
             $this->max_participants - $this->registrations()->count(),
             0
+        );
+    }
+
+    public function allowanceForms()
+    {
+        return $this->hasMany(
+            AllowanceForm::class,
+            'attendant_list_id'
         );
     }
 }

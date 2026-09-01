@@ -49,15 +49,43 @@ class AttendantRegistration extends Model
 
         'allow_photos',
 
+        'remark',
+
+        'network',
+
+        'dsa',
+
         'unique_count',
 
         'signature',
+
+        'dsa_status',
+
+        'dsa_approved_by',
+
+        'dsa_approved_at',
+
+        'dsa_rejection_reason',
+
+    ];
+
+    protected $casts = [
+
+        'dsa_approved_at' => 'datetime',
 
     ];
 
     public function attendantList()
     {
         return $this->belongsTo(AttendantList::class);
+    }
+
+    public function dsaApprover()
+    {
+        return $this->belongsTo(
+            User::class,
+            'dsa_approved_by'
+        );
     }
 
 

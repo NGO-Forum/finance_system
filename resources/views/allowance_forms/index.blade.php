@@ -46,7 +46,14 @@
 
                         </div>
 
-                        <div class="mt-8 lg:mt-0">
+                        <div class="mt-8 lg:mt-0 flex flex-wrap gap-6">
+
+                            <a href="{{ route('allowance-forms.template.pdf') }}" target="_blank"
+                                class="inline-flex items-center gap-2 px-4 py-2
+                                    bg-red-600 hover:bg-red-700
+                                    text-white rounded-lg font-medium">
+                                PDF Template
+                            </a>
 
                             <a href="{{ route('allowance-forms.create') }}"
                                 class="inline-flex items-center gap-2 rounded-2xl bg-white px-6 py-3 font-bold text-emerald-700 shadow-lg hover:scale-105 transition duration-300">

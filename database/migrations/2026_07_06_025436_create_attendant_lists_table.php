@@ -14,7 +14,8 @@ return new class extends Migration
 
             $table->string('title');
 
-            $table->date('activity_date');
+            $table->date('start_date');
+            $table->date('end_date');
 
             // Activity time
             $table->time('start_time')->nullable();
@@ -24,6 +25,9 @@ return new class extends Migration
 
             $table->boolean('registration_enabled')
                 ->default(false);
+
+            $table->dateTime('registration_closed_at')
+                ->nullable();
 
             $table->string('registration_token')
                 ->nullable()

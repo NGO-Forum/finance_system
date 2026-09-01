@@ -58,6 +58,10 @@ Route::get('/attendance/full', function () {
     return view('attendant-registrations.registration-full');
 })->name('attendant.registration.full');
 
+Route::get('/attendant-registration-closed', function () {
+    return view('attendant-registrations.closed');
+})->name('attendant.registration.closed');
+
 Route::post(
     '/attendant-lists/template/export',
     [AttendantListController::class, 'exportPdf']
@@ -68,6 +72,71 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/dashboard', [DashboardController::class, 'index'])
         ->name('dashboard');
+
+    Route::get(
+        '/finance-forms/template',
+        [FinanceFormController::class, 'template']
+    )->name('finance-forms.template');
+
+
+    Route::get(
+        '/fund-requests/template/word',
+        [FundRequestController::class, 'exportWordTemplate']
+    )->name('fund-requests.template.word');
+
+
+    Route::get(
+        '/expenditure-summaries/template/pdf',
+        [ExpenditureSummaryController::class, 'templatePdf']
+    )->name('expenditure-summaries.template.pdf');
+
+    Route::get(
+        '/purchase-requests/template/pdf',
+        [PurchaseRequestController::class, 'templatePdf']
+    )->name('purchase-requests.template.pdf');
+
+
+    Route::get(
+        '/dsa-claims/template/pdf',
+        [DsaClaimController::class, 'templatePdf']
+    )->name('dsa-claims.template.pdf');
+
+
+    Route::get(
+        '/allowance-forms/template/pdf',
+        [AllowanceFormController::class, 'templatePdf']
+    )->name('allowance-forms.template.pdf');
+
+
+    Route::get(
+        '/verbal-quotes/template/pdf',
+        [VerbalQuoteController::class, 'templatePdf']
+    )->name('verbal-quotes.template.pdf');
+
+
+    Route::get(
+        '/quotation-analyses/template/pdf',
+        [QuotationAnalysisController::class, 'templatePdf']
+    )->name('quotation-analyses.template.pdf');
+
+
+    Route::get(
+        '/purchase-orders/template/pdf',
+        [PurchaseOrderController::class, 'templatePdf']
+    )->name('purchase-orders.template.pdf');
+
+
+    Route::get(
+        '/goods-received-notes/template',
+        [GoodsReceivedNoteController::class, 'template']
+    )->name('goods-received-notes.template');
+
+
+    Route::get(
+        '/invoices/template',
+        [InvoiceController::class, 'template']
+    )->name('invoices.template');
+
 
     Route::resource('users', UserController::class);
     Route::resource('departments', DepartmentController::class);
@@ -206,11 +275,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     )->name('expenditure-summaries.pdf');
 
 
+
     // Form Finance
     Route::get(
         'finance-forms/{financeForm}/pdf',
         [FinanceFormController::class, 'exportPdf']
     )->name('finance-forms.pdf');
+
+
 
 
     // Attendant list
@@ -238,6 +310,22 @@ Route::middleware(['auth', 'verified'])->group(function () {
         '/attendant-lists/{attendantList}/qr-preview',
         [AttendantListController::class, 'previewQrCard']
     )->name('attendant-lists.qr-preview');
+
+    Route::get(
+        '/attendant-lists/{attendantList}/dsa-participants',
+        [AttendantListController::class, 'dsaParticipants']
+    )->name('attendant-lists.dsa-participants');
+
+    Route::post(
+        '/attendant-registrations/{registration}/dsa/approve',
+        [AttendantRegistrationController::class, 'approveDsa']
+    )->name('attendant-registrations.dsa.approve');
+
+
+    Route::post(
+        '/attendant-registrations/{registration}/dsa/reject',
+        [AttendantRegistrationController::class, 'rejectDsa']
+    )->name('attendant-registrations.dsa.reject');
 
 
     // Allowance list
@@ -291,6 +379,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
         [PurchaseRequestController::class, 'exportPdf']
     )
         ->name('purchase-requests.pdf');
+
+    Route::post(
+        '/purchase-requests/{purchaseRequest}/approve',
+        [PurchaseRequestController::class, 'approve']
+    )->name('purchase-requests.approve');
+
+
 
     // DSA Form
     Route::get(

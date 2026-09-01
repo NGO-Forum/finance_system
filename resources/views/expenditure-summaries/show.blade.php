@@ -69,7 +69,7 @@
 
                     <strong>NAME & POSITION:</strong>
 
-                    {{ $expenditureSummary->user?->name }}
+                    {{ $expenditureSummary->user?->name }} / {{ $expenditureSummary->user?->position }}
 
                 </td>
 

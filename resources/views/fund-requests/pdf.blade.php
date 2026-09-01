@@ -483,10 +483,12 @@
                         <span class="label">Prepared by:</span>
                     </p>
 
-                    @if ($fundRequest->requester_signature)
+                    <p style="height: 85px;">
+                        {{-- @if ($fundRequest->requester_signature)
                         <img class="signature-image"
                             src="{{ public_path('storage/' . $fundRequest->requester_signature) }}">
-                    @endif
+                    @endif --}}
+                    </p>
 
                     <p>
                         <span class="label">Name:</span>
@@ -518,10 +520,10 @@
                     </p>
 
                     <p style="height: 85px;">
-                        @if ($fundRequest->reviewer_signature)
+                        {{-- @if ($fundRequest->reviewer_signature)
                             <img class="signature-image"
                                 src="{{ public_path('storage/' . $fundRequest->reviewer_signature) }}">
-                        @endif
+                        @endif --}}
                     </p>
 
                     <p>
@@ -559,10 +561,12 @@
                         <span class="label">Approved by:</span>
                     </p>
 
-                    @if ($fundRequest->approved_signature)
+                    <p style="height: 85px;">
+                        {{-- @if ($fundRequest->approved_signature)
                         <img class="signature-image"
                             src="{{ public_path('storage/' . $fundRequest->approved_signature) }}">
-                    @endif
+                    @endif --}}
+                    </p>
 
                     <p>
                         <span class="label">Name:</span>

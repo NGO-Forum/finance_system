@@ -59,10 +59,9 @@
                                 </option>
 
                                 @foreach ($fundRequests as $fundRequest)
-                                    <option value="{{ $fundRequest->id }}" data-title="{{ $fundRequest->title }}">
-
+                                    <option value="{{ $fundRequest->id }}" data-title="{{ $fundRequest->title }}"
+                                        data-items='@json($fundRequest->items)'>
                                         {{ $fundRequest->title }}
-
                                     </option>
                                 @endforeach
 
@@ -300,13 +299,6 @@
 
                     </div>
 
-                    <button type="button" onclick="addExpenseCard()"
-                        class="bg-green-600 hover:bg-green-700 text-white px-5 py-3 rounded-xl font-medium">
-
-                        + Add Expense
-
-                    </button>
-
                 </div>
 
                 <div id="expense-container" class="p-6 space-y-5">
@@ -322,7 +314,7 @@
                             <button type="button" onclick="removeExpenseCard(this)"
                                 class="text-red-600 hover:text-red-700">
 
-                                Remove
+                                <i class="fas fa-trash"></i>
 
                             </button>
 
@@ -427,6 +419,15 @@
 
                     </div>
 
+                </div>
+
+                <div class="p-6 flex justify-end">
+                    <button type="button" onclick="addExpenseCard()"
+                        class="bg-green-600 hover:bg-green-700 text-white px-5 py-3 rounded-xl font-medium">
+
+                        + Add Expense
+
+                    </button>
                 </div>
 
 
@@ -638,7 +639,8 @@
             </div>
 
             {{-- Prepared Signature --}}
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-200">
+
+            {{-- <div class="bg-white rounded-2xl shadow-sm border border-gray-200">
 
                 <div class="p-6">
 
@@ -664,7 +666,6 @@
 
                     </div>
 
-                    {{-- Draw --}}
                     <div id="prepared-canvas-section">
 
                         <div class="border-2 border-dashed border-gray-300 rounded-xl overflow-hidden">
@@ -685,7 +686,7 @@
 
                     </div>
 
-                    {{-- Upload --}}
+
                     <div id="prepared-upload-section" class="hidden">
 
                         <label
@@ -703,7 +704,7 @@
 
                 </div>
 
-            </div>
+            </div> --}}
 
             <!-- Approval Workflow -->
             <div class="bg-white rounded-2xl shadow-sm border border-gray-200 mb-6">
@@ -864,105 +865,186 @@
 
     <script>
         // Budget 
-        function addExpenseCard() {
+        function addExpenseCard(data = {}) {
+
             const container =
-                document.getElementById(
-                    'expense-container'
-                );
+                document.getElementById('expense-container');
 
             const count =
-                container.querySelectorAll(
-                    '.expense-card'
-                ).length + 1;
+                container.querySelectorAll('.expense-card').length + 1;
+
+            const index = count - 1;
 
             const html = `
+                    <div class="expense-card bg-gray-50 border rounded-2xl p-5">
 
-                <div class="expense-card bg-gray-50 border rounded-2xl p-5">
+                        <div class="flex justify-between items-center mb-5">
 
-                    <div class="flex justify-between items-center mb-5">
+                            <h3 class="expense-title font-semibold text-green-700">
+                                Expense #${count}
+                            </h3>
 
-                        <h3 class="expense-title font-semibold text-green-700">
-                            Expense #${count}
-                        </h3>
+                            <button
+                                type="button"
+                                onclick="removeExpenseCard(this)"
+                                class="text-red-600 hover:text-red-700">
 
-                        <button
-                            type="button"
-                            onclick="removeExpenseCard(this)"
-                            class="text-red-600">
+                                <i class="fas fa-trash"></i>
 
-                            Remove
+                            </button>
 
-                        </button>
+                        </div>
+
+
+                        <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+
+                            {{-- Description --}}
+                            <div class="col-span-5">
+
+                                <label class="block text-sm font-medium mb-2">
+                                    Description
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="description[]"
+                                    value="${escapeHtml(data.description ?? '')}"
+                                    class="w-full border rounded-xl px-4 py-3"
+                                    required>
+
+                            </div>
+
+
+                            {{-- AV Amount --}}
+                            <div>
+
+                                <label class="block text-sm font-medium mb-2">
+                                    AV Amount
+                                </label>
+
+                                <input
+                                    type="number"
+                                    step="0.01"
+                                    name="av_amount[]"
+                                    value="${data.av_amount ?? ''}"
+                                    class="av-amount w-full border rounded-xl px-4 py-3"
+                                    oninput="calculateTotals()">
+
+                            </div>
+
+
+                            {{-- Actual Expense --}}
+                            <div>
+
+                                <label class="block text-sm font-medium mb-2">
+                                    Actual Expense
+                                </label>
+
+                                <input
+                                    type="number"
+                                    step="0.01"
+                                    name="actual_expense[]"
+                                    value=""
+                                    class="actual-expense w-full border rounded-xl px-4 py-3"
+                                    oninput="calculateTotals()"
+                                    required>
+
+                            </div>
+
+
+                            {{-- Budget Code --}}
+                            <div>
+
+                                <label class="block text-sm font-medium mb-2">
+                                    Budget Code
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="budget_code[]"
+                                    value="${escapeHtml(data.budget_code ?? '')}"
+                                    placeholder="Budget Code"
+                                    class="w-full border rounded-xl px-4 py-3"
+                                    required>
+
+                            </div>
+
+
+                            {{-- Donor --}}
+                            <div>
+
+                                <label class="block text-sm font-medium mb-2">
+                                    Donor
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="donor[]"
+                                    value="${escapeHtml(data.donor ?? '')}"
+                                    placeholder="Donor"
+                                    class="w-full border rounded-xl px-4 py-3"
+                                    required>
+
+                            </div>
+
+
+                            {{-- Donor Code --}}
+                            <div>
+
+                                <label class="block text-sm font-medium mb-2">
+                                    Donor Code
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="donor_code[]"
+                                    value="${escapeHtml(data.donor_code ?? '')}"
+                                    placeholder="Donor Code"
+                                    class="w-full border rounded-xl px-4 py-3"
+                                    required>
+
+                            </div>
+
+
+                            {{-- Attachments --}}
+                            <div class="col-span-5">
+
+                                <label class="block text-sm font-medium mb-2">
+                                    Reference Supporting Documents
+                                </label>
+
+                                <div class="border-2 border-dashed border-gray-300 rounded-2xl p-6 bg-white">
+
+                                    <input
+                                        type="file"
+                                        name="attachments[${index}][]"
+                                        multiple
+                                        accept=".pdf,.jpg,.jpeg,.png"
+                                        class="attachment-input hidden">
+
+                                    <button
+                                        type="button"
+                                        onclick="this.parentElement.querySelector('.attachment-input').click()"
+                                        class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">
+
+                                        + Add Files
+
+                                    </button>
+
+                                    <div class="file-preview mt-4 space-y-2"></div>
+
+                                    <p class="mt-3 text-xs text-gray-500">
+                                        Accepted formats: PDF, JPG, JPEG, PNG
+                                    </p>
+
+                                </div>
+
+                            </div>
+
+                        </div>
 
                     </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
-
-                        <div class="col-span-5">
-                            <label class="block text-sm font-medium mb-2">
-                                Description
-                            </label>
-                            <input type="text"
-                                name="description[]"
-                                class="w-full border rounded-xl px-4 py-3">
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium mb-2">
-                                AV Amount
-                            </label>
-                            <input type="number"
-                                step="0.01"
-                                name="av_amount[]"
-                                class="av-amount w-full border rounded-xl px-4 py-3"
-                                oninput="calculateTotals()">
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium mb-2">
-                                Actual Expense
-                            </label>
-                            <input type="number"
-                                step="0.01"
-                                name="actual_expense[]"
-                                class="actual-expense w-full border rounded-xl px-4 py-3"
-                                oninput="calculateTotals()">
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium mb-2">
-                                Budget Code
-                            </label>
-                            <input type="text"
-                                name="budget_code[]"
-                                placeholder="Budget Code"
-                                class="w-full border rounded-xl px-4 py-3" required>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium mb-2">
-                            Donor
-                            </label>
-                            <input type="text"
-                                name="donor[]"
-                                placeholder="Donor"
-                                class="w-full border rounded-xl px-4 py-3" required>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium mb-2">
-                                Donor Code
-                            </label>
-                            <input type="text"
-                                name="donor_code[]"
-                                placeholder="Donor Code"
-                                class="w-full border rounded-xl px-4 py-3" required>
-                        </div>
-
-                    </div>
-
-                </div>
-            `;
+                `;
 
             container.insertAdjacentHTML(
                 'beforeend',
@@ -1032,16 +1114,96 @@
         }
 
         // variance-section
-        document
-            .getElementById('fund_request_id')
+        document.getElementById('fund_request_id')
             ?.addEventListener('change', function() {
 
                 const selected =
                     this.options[this.selectedIndex];
 
-                document.getElementById('activity').value =
-                    selected.dataset.title || '';
+                const activityInput =
+                    document.getElementById('activity');
+
+                const container =
+                    document.getElementById('expense-container');
+
+                // ------------------------------------------
+                // No Fund Request selected
+                // ------------------------------------------
+
+                if (!this.value) {
+
+                    if (activityInput) {
+                        activityInput.value = '';
+                    }
+
+                    // Keep one empty expense row
+                    container.innerHTML = '';
+
+                    addExpenseCard();
+
+                    return;
+                }
+
+                // ------------------------------------------
+                // Set Activity
+                // ------------------------------------------
+
+                if (activityInput) {
+                    activityInput.value =
+                        selected.dataset.title || '';
+                }
+
+                // ------------------------------------------
+                // Get Fund Request Items
+                // ------------------------------------------
+
+                let items = [];
+
+                try {
+                    items = JSON.parse(
+                        selected.dataset.items || '[]'
+                    );
+                } catch (error) {
+                    console.error(
+                        'Unable to read Fund Request items:',
+                        error
+                    );
+                }
+
+                // ------------------------------------------
+                // Clear existing expense rows
+                // ------------------------------------------
+
+                container.innerHTML = '';
+
+                // ------------------------------------------
+                // No items
+                // ------------------------------------------
+
+                if (!items.length) {
+                    addExpenseCard();
+                    return;
+                }
+
+                // ------------------------------------------
+                // Create one Expense row per Fund Request item
+                // ------------------------------------------
+
+                items.forEach(function(item, index) {
+
+                    addExpenseCard({
+                        description: item.description ?? '',
+                        av_amount: item.budget ?? '',
+                        budget_code: item.budget_code ?? '',
+                        donor: item.donor ?? '',
+                        donor_code: item.donor_code ?? ''
+                    });
+
+                });
+
+                calculateTotals();
             });
+
 
         function toggleVariance(show) {
             const section =
@@ -1089,22 +1251,17 @@
         // ==========================
         // Add Expense Card
         // ==========================
-        function addExpenseCard() {
+        function addExpenseCard(data = {}) {
 
             const container =
-                document.getElementById(
-                    'expense-container'
-                );
+                document.getElementById('expense-container');
 
             const count =
-                document.querySelectorAll(
-                    '.expense-card'
-                ).length + 1;
+                container.querySelectorAll('.expense-card').length + 1;
 
             const index = count - 1;
 
             const html = `
-
                 <div class="expense-card bg-gray-50 border rounded-2xl p-5">
 
                     <div class="flex justify-between items-center mb-5">
@@ -1118,14 +1275,16 @@
                             onclick="removeExpenseCard(this)"
                             class="text-red-600 hover:text-red-700">
 
-                            Remove
+                            <i class="fas fa-trash"></i>
 
                         </button>
 
                     </div>
 
+
                     <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
 
+                        {{-- Description --}}
                         <div class="col-span-5">
 
                             <label class="block text-sm font-medium mb-2">
@@ -1135,10 +1294,14 @@
                             <input
                                 type="text"
                                 name="description[]"
-                                class="w-full border rounded-xl px-4 py-3">
+                                value="${escapeHtml(data.description ?? '')}"
+                                class="w-full border rounded-xl px-4 py-3"
+                                required>
 
                         </div>
 
+
+                        {{-- AV Amount --}}
                         <div>
 
                             <label class="block text-sm font-medium mb-2">
@@ -1149,11 +1312,14 @@
                                 type="number"
                                 step="0.01"
                                 name="av_amount[]"
+                                value="${data.av_amount ?? ''}"
                                 class="av-amount w-full border rounded-xl px-4 py-3"
                                 oninput="calculateTotals()">
 
                         </div>
 
+
+                        {{-- Actual Expense --}}
                         <div>
 
                             <label class="block text-sm font-medium mb-2">
@@ -1164,11 +1330,15 @@
                                 type="number"
                                 step="0.01"
                                 name="actual_expense[]"
+                                value=""
                                 class="actual-expense w-full border rounded-xl px-4 py-3"
-                                oninput="calculateTotals()">
+                                oninput="calculateTotals()"
+                                required>
 
                         </div>
 
+
+                        {{-- Budget Code --}}
                         <div>
 
                             <label class="block text-sm font-medium mb-2">
@@ -1178,10 +1348,15 @@
                             <input
                                 type="text"
                                 name="budget_code[]"
-                                class="w-full border rounded-xl px-4 py-3">
+                                value="${escapeHtml(data.budget_code ?? '')}"
+                                placeholder="Budget Code"
+                                class="w-full border rounded-xl px-4 py-3"
+                                required>
 
                         </div>
 
+
+                        {{-- Donor --}}
                         <div>
 
                             <label class="block text-sm font-medium mb-2">
@@ -1191,10 +1366,15 @@
                             <input
                                 type="text"
                                 name="donor[]"
-                                class="w-full border rounded-xl px-4 py-3">
+                                value="${escapeHtml(data.donor ?? '')}"
+                                placeholder="Donor"
+                                class="w-full border rounded-xl px-4 py-3"
+                                required>
 
                         </div>
 
+
+                        {{-- Donor Code --}}
                         <div>
 
                             <label class="block text-sm font-medium mb-2">
@@ -1204,10 +1384,15 @@
                             <input
                                 type="text"
                                 name="donor_code[]"
-                                class="w-full border rounded-xl px-4 py-3">
+                                value="${escapeHtml(data.donor_code ?? '')}"
+                                placeholder="Donor Code"
+                                class="w-full border rounded-xl px-4 py-3"
+                                required>
 
                         </div>
 
+
+                        {{-- Attachments --}}
                         <div class="col-span-5">
 
                             <label class="block text-sm font-medium mb-2">
@@ -1245,12 +1430,22 @@
                     </div>
 
                 </div>
-                 `;
+            `;
 
             container.insertAdjacentHTML(
                 'beforeend',
                 html
             );
+        }
+
+        function escapeHtml(value) {
+
+            return String(value ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
         }
 
         // ==========================

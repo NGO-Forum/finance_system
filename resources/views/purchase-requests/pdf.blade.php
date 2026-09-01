@@ -58,6 +58,7 @@
             font-size: 11px;
             color: #000;
             margin-top: 10px;
+            text-align: center;
         }
 
         .doc-code {
@@ -225,7 +226,7 @@
         <tr>
             <td>
                 <span class="meta-label-khmer">ម្ចាស់ជំនួយ / </span>
-                <span class="meta-label-en">Donor: {{ $purchaseRequest->donor }} / Donor Code
+                <span class="meta-label-en">Donor: {{ $purchaseRequest->donor ? : '..........................' }}  / Donor Code:
                     {{ $purchaseRequest->donor_code }}</span>
             </td>
             <td>
@@ -234,7 +235,7 @@
             </td>
         </tr>
         <tr>
-            <td colspan="2" style="padding-top: 6px;">
+            <td colspan="2" style="height: 80px; line-height: 1.5;">
                 <span class="meta-label-khmer">គោលបំណង / </span>
                 <span class="meta-label-en">Purpose: {{ $purchaseRequest->purpose }}</span>
             </td>

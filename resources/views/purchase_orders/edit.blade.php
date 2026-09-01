@@ -39,10 +39,10 @@
 
                     <div class="flex items-center gap-4">
 
-                        {{-- Edit Icon --}}
+                        {{-- Document Icon --}}
                         <div
                             class="flex-shrink-0
-                           w-16 h-16
+                           w-12 h-12
                            flex items-center justify-center
                            rounded-xl
                            bg-gradient-to-br
@@ -50,25 +50,25 @@
                            text-green-700
                            border border-green-100">
 
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" fill="none" viewBox="0 0 24 24"
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24"
                                 stroke="currentColor">
 
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5
-                                                               M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
 
                             </svg>
 
                         </div>
 
 
-                        {{-- Text --}}
-                        <div class="min-w-0">
+                        {{-- Title Content --}}
+                        <div>
 
-                            {{-- Title --}}
+                            {{-- Title + Form Code --}}
                             <div class="flex flex-wrap items-center gap-2.5">
 
                                 <h1
-                                    class="text-xl sm:text-2xl
+                                    class="text-xl sm:text-3xl
                                    font-bold
                                    tracking-tight
                                    text-green-700">
@@ -78,7 +78,6 @@
                                 </h1>
 
 
-                                {{-- Form Code --}}
                                 <span
                                     class="inline-flex items-center
                                    px-2.5 py-1
@@ -97,36 +96,33 @@
                             </div>
 
 
-                            {{-- PO Number --}}
-                            <div class="flex flex-wrap items-center
-                               gap-2 mt-1.5">
-
-                                <span class="text-sm text-gray-500">
-                                    Purchase Order:
-                                </span>
-
-                                <span
-                                    class="inline-flex items-center
-                                   px-2.5 py-1
-                                   rounded-md
-                                   bg-gray-100
-                                   text-gray-700
-                                   text-sm
-                                   font-semibold">
-
-                                    {{ $purchaseOrder->po_no }}
-
-                                </span>
-
-                            </div>
-
-
                             {{-- Description --}}
-                            <p class="text-xs text-gray-400 mt-2">
+                            <p class="text-sm text-gray-500 mt-1">
 
                                 Update the purchase order information and save your changes.
 
                             </p>
+
+
+                            {{-- Breadcrumb-style Information --}}
+                            <div
+                                class="flex items-center gap-2
+                               mt-2.5
+                               text-xs text-gray-400">
+
+                                <span class="text-green-600 font-medium">
+                                    Finance Management
+                                </span>
+
+                                <span>
+                                    /
+                                </span>
+
+                                <span>
+                                    Purchase Order
+                                </span>
+
+                            </div>
 
                         </div>
 
@@ -137,29 +133,30 @@
                     {{-- Back Button --}}
                     {{-- ================================================= --}}
 
-                    <a href="{{ route('purchase-orders.index', $purchaseOrder) }}"
+                    <a href="{{ route('purchase-orders.index') }}"
                         class="group
-                            inline-flex items-center
-                            justify-center
-                            gap-2
-                            w-full sm:w-auto
-                            px-4 py-2.5
-                            rounded-xl
-                            border border-gray-200
-                            bg-white
-                            hover:bg-gray-50
-                            hover:border-gray-300
-                            text-green-700
-                            text-sm
-                            font-semibold
-                            shadow-sm
-                            hover:shadow
-                            transition-all
-                            duration-200
-                            focus:outline-none
-                            focus:ring-2
-                            focus:ring-green-500
-                            focus:ring-offset-2">
+                       inline-flex items-center
+                       justify-center
+                       gap-2
+                       w-full sm:w-auto
+                       px-4 py-2.5
+                       rounded-xl
+                       border border-gray-200
+                       bg-green-600
+                       hover:bg-green-700
+                       hover:border-gray-300
+                       text-white
+                       text-sm
+                       font-semibold
+                       shadow-sm
+                       hover:shadow
+                       transition-all
+                       duration-200
+                       focus:outline-none
+                       focus:ring-2
+                       focus:ring-green-500
+                       focus:ring-offset-2">
+
 
                         {{-- Back Icon --}}
                         <svg xmlns="http://www.w3.org/2000/svg"
@@ -172,6 +169,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
 
                         </svg>
+
 
                         <span>
                             Back
@@ -186,22 +184,25 @@
         </div>
 
 
-        @if ($errors->any())
-            <div
-                class="mb-6
-                    p-4
-                    rounded-lg
-                    bg-red-50
-                    border border-red-200">
+        {{-- ========================================================= --}}
+        {{-- ERRORS --}}
+        {{-- ========================================================= --}}
 
-                <ul
-                    class="list-disc
-                       list-inside
-                       text-sm
-                       text-red-600">
+        @if ($errors->any())
+            <div class="mb-6 p-4 rounded-lg
+                    bg-red-50 border border-red-200">
+
+                <h3 class="font-bold text-red-700 mb-2">
+                    Please correct the following:
+                </h3>
+
+                <ul class="list-disc list-inside
+                       text-sm text-red-600">
 
                     @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
+                        <li>
+                            {{ $error }}
+                        </li>
                     @endforeach
 
                 </ul>
@@ -211,109 +212,108 @@
 
 
 
-        <form action="{{ route('purchase-orders.update', $purchaseOrder) }}" method="POST">
+        <form action="{{ route('purchase-orders.update', $purchaseOrder) }}" method="POST" id="purchaseOrderForm">
 
             @csrf
-
             @method('PUT')
 
-
             {{-- ===================================================== --}}
-            {{-- BASIC INFORMATION --}}
+            {{-- PO INFORMATION --}}
             {{-- ===================================================== --}}
 
-            <div
-                class="bg-white
-                    rounded-xl
-                    border border-gray-200
-                    shadow-sm
-                    mb-6">
+            <div class="bg-white rounded-xl border
+                    border-gray-200 shadow-sm mb-5">
 
-                <div
-                    class="px-6 py-4
-                        bg-green-600 rounded-t-lg
-                        border-b border-green-200">
+                <div class="px-6 py-4
+                        bg-green-600 rounded-t-xl border-b border-green-200">
 
                     <h2 class="font-bold text-white">
                         Purchase Order Information
                     </h2>
+
+                    <p class="text-xs text-gray-200 mt-1">
+                        Purchase Order Form — FM02-11
+                    </p>
 
                 </div>
 
 
                 <div class="p-6">
 
-                    <div
-                        class="grid grid-cols-1
-                            md:grid-cols-2
-                            lg:grid-cols-4
-                            gap-5">
+                    <div class="grid grid-cols-1 md:grid-cols-2
+                            lg:grid-cols-4 gap-5">
 
 
+                        {{-- PO No --}}
                         <div>
 
-                            <label class="block text-sm
-                                      font-semibold mb-1">
-
+                            <label
+                                class="block text-sm
+                                      font-semibold text-gray-700 mb-1">
                                 PO No.
-
+                                <span class="text-red-500">*</span>
                             </label>
 
                             <input type="text" name="po_no" value="{{ old('po_no', $purchaseOrder->po_no) }}" required
                                 class="w-full rounded-lg
-                                   border-gray-300 focus:border-green-500
+                                   border-gray-300
+                                   focus:border-green-500
                                    focus:ring-green-500">
 
                         </div>
 
 
+                        {{-- PO Date --}}
                         <div>
 
-                            <label class="block text-sm
-                                      font-semibold mb-1">
-
-                                PO Date
-
+                            <label
+                                class="block text-sm
+                                      font-semibold text-gray-700 mb-1">
+                                Date
+                                <span class="text-red-500">*</span>
                             </label>
 
-                            <input type="date" name="po_date"
-                                value="{{ old('po_date', $purchaseOrder->po_date?->format('Y-m-d')) }}" required
+                            <input type="date" name="po_date" value="{{ old('po_date', $purchaseOrder->po_date?->format('Y-m-d')) }}"
+                                required
                                 class="w-full rounded-lg
-                                   border-gray-300 focus:border-green-500
+                                   border-gray-300
+                                   focus:border-green-500
                                    focus:ring-green-500">
 
                         </div>
 
 
+                        {{-- PR No --}}
                         <div>
 
-                            <label class="block text-sm
-                                      font-semibold mb-1">
-
+                            <label
+                                class="block text-sm
+                                      font-semibold text-gray-700 mb-1">
                                 PR No.
-
                             </label>
 
-                            <input type="text" name="pr_no" value="{{ old('pr_no', $purchaseOrder->pr_no) }}"
+                            <input type="text" name="pr_no" value="{{ old('pr_no', $purchaseOrder->pr_no) }}" placeholder="PR-2025-001"
                                 class="w-full rounded-lg
-                                   border-gray-300 focus:border-green-500
+                                   border-gray-300
+                                   focus:border-green-500
                                    focus:ring-green-500">
 
                         </div>
 
 
+                        {{-- Status --}}
                         <div>
 
-                            <label class="block text-sm
-                                      font-semibold mb-1">
-
+                            <label
+                                class="block text-sm
+                                      font-semibold text-gray-700 mb-1">
                                 Status
-
                             </label>
 
                             <select name="status"
                                 class="w-full rounded-lg
-                                   border-gray-300 focus:border-green-500
+                                   border-gray-300
+                                   focus:border-green-500
                                    focus:ring-green-500">
 
                                 @foreach (['Draft', 'Pending', 'Approved', 'Rejected', 'Completed', 'Cancelled'] as $status)
@@ -333,25 +333,23 @@
             </div>
 
 
+
             {{-- ===================================================== --}}
-            {{-- SUPPLIER / DELIVERY --}}
+            {{-- SUPPLIER + DELIVERY --}}
             {{-- ===================================================== --}}
 
-            <div class="grid grid-cols-1
-                    lg:grid-cols-2
+            <div class="grid grid-cols-1 lg:grid-cols-2
                     gap-5 mb-5">
 
 
-                <div
-                    class="bg-white
-                        rounded-xl
-                        border border-gray-200
-                        shadow-sm">
+                {{-- SUPPLIER --}}
+                <div class="bg-white rounded-xl border
+                        border-gray-200 shadow-sm">
 
                     <div
                         class="px-6 py-4
-                            bg-green-600 rounded-t-xl
-                            border-b">
+                            bg-green-600
+                            border-b rounded-t-xl border-green-200">
 
                         <h2 class="font-bold text-white">
                             Supplier Information
@@ -363,54 +361,61 @@
                     <div class="p-6 space-y-5">
 
 
+                        {{-- Supplier Name --}}
                         <div>
 
-                            <label class="block text-sm
-                                      font-semibold mb-1">
+                            <label
+                                class="block text-sm
+                                      font-semibold text-gray-700 mb-1">
 
                                 Supplier Name
 
+                                <span class="text-red-500">*</span>
+
                             </label>
 
-                            <input type="text" name="supplier_name"
-                                value="{{ old('supplier_name', $purchaseOrder->supplier_name) }}" required
+                            <input type="text" name="supplier_name" value="{{ old('supplier_name', $purchaseOrder->supplier_name) }}" required
+                                placeholder="Supplier name"
                                 class="w-full rounded-lg
-                                   border-gray-300 focus:border-green-500
+                                   border-gray-300
+                                   focus:border-green-500
                                    focus:ring-green-500">
 
                         </div>
 
 
+                        {{-- Address --}}
                         <div>
 
-                            <label class="block text-sm
-                                      font-semibold mb-1">
-
+                            <label
+                                class="block text-sm
+                                      font-semibold text-gray-700 mb-1">
                                 Address
-
                             </label>
 
-                            <textarea name="supplier_address" rows="3"
+                            <textarea name="supplier_address" rows="3" placeholder="Supplier address"
                                 class="w-full rounded-lg
-                                   border-gray-300 focus:border-green-500
+                                   border-gray-300
+                                   focus:border-green-500
                                    focus:ring-green-500">{{ old('supplier_address', $purchaseOrder->supplier_address) }}</textarea>
 
                         </div>
 
 
+                        {{-- Phone --}}
                         <div>
 
-                            <label class="block text-sm
-                                      font-semibold mb-1">
-
+                            <label
+                                class="block text-sm
+                                      font-semibold text-gray-700 mb-1">
                                 Telephone
-
                             </label>
 
-                            <input type="text" name="supplier_phone"
-                                value="{{ old('supplier_phone', $purchaseOrder->supplier_phone) }}"
+                            <input type="text" name="supplier_phone" value="{{ old('supplier_phone', $purchaseOrder->supplier_phone) }}"
+                                placeholder="Telephone"
                                 class="w-full rounded-lg
-                                   border-gray-300 focus:border-green-500
+                                   border-gray-300
+                                   focus:border-green-500
                                    focus:ring-green-500">
 
                         </div>
@@ -421,19 +426,17 @@
 
 
 
-                <div
-                    class="bg-white
-                        rounded-xl
-                        border border-gray-200
-                        shadow-sm">
+                {{-- DELIVERY --}}
+                <div class="bg-white rounded-xl border
+                        border-gray-200 shadow-sm">
 
                     <div
                         class="px-6 py-4
-                            bg-green-600 rounded-t-xl
-                            border-b">
+                            bg-green-600
+                            border-b rounded-t-xl border-green-200">
 
                         <h2 class="font-bold text-white">
-                            Delivery Information
+                            Delivered To Address
                         </h2>
 
                     </div>
@@ -442,54 +445,56 @@
                     <div class="p-6 space-y-5">
 
 
+                        {{-- Address --}}
                         <div>
 
-                            <label class="block text-sm
-                                      font-semibold mb-1">
-
+                            <label
+                                class="block text-sm
+                                      font-semibold text-gray-700 mb-1">
                                 Delivered To
-
                             </label>
 
                             <textarea name="delivery_address" rows="3"
                                 class="w-full rounded-lg
-                                   border-gray-300 focus:border-green-500
+                                   border-gray-300
+                                   focus:border-green-500
                                    focus:ring-green-500">{{ old('delivery_address', $purchaseOrder->delivery_address) }}</textarea>
 
                         </div>
 
 
+                        {{-- Delivery Date --}}
                         <div>
 
-                            <label class="block text-sm
-                                      font-semibold mb-1">
-
+                            <label
+                                class="block text-sm
+                                      font-semibold text-gray-700 mb-1">
                                 Delivery Date
-
                             </label>
 
-                            <input type="date" name="delivery_date"
-                                value="{{ old('delivery_date', $purchaseOrder->delivery_date?->format('Y-m-d')) }}"
+                            <input type="date" name="delivery_date" value="{{ old('delivery_date', $purchaseOrder->delivery_date?->format('Y-m-d')) }}"
                                 class="w-full rounded-lg
-                                   border-gray-300 focus:border-green-500
+                                   border-gray-300
+                                   focus:border-green-500
                                    focus:ring-green-500">
 
                         </div>
 
 
+                        {{-- Term --}}
                         <div>
 
-                            <label class="block text-sm
-                                      font-semibold mb-1">
-
+                            <label
+                                class="block text-sm
+                                      font-semibold text-gray-700 mb-1">
                                 Term of Delivery
-
                             </label>
 
-                            <input type="text" name="term_of_delivery"
-                                value="{{ old('term_of_delivery', $purchaseOrder->term_of_delivery) }}"
+                            <input type="text" name="term_of_delivery" value="{{ old('term_of_delivery', $purchaseOrder->term_of_delivery) }}"
+                                placeholder="Service supplier's quotation"
                                 class="w-full rounded-lg
-                                   border-gray-300 focus:border-green-500
+                                   border-gray-300
+                                   focus:border-green-500
                                    focus:ring-green-500">
 
                         </div>
@@ -505,15 +510,13 @@
             {{-- PAYMENT --}}
             {{-- ===================================================== --}}
 
-            <div
-                class="bg-white
-                    rounded-xl
-                    border border-gray-200
-                    shadow-sm mb-6">
+            <div class="bg-white rounded-xl border
+                    border-gray-200 shadow-sm mb-5">
 
-                <div class="px-6 py-4
-                        bg-green-600 rounded-t-xl
-                        border-b">
+                <div
+                    class="px-6 py-4
+                        bg-green-600
+                        border-b rounded-t-xl border-green-200">
 
                     <h2 class="font-bold text-white">
                         Payment Information
@@ -524,78 +527,85 @@
 
                 <div class="p-6">
 
-                    <div
-                        class="grid grid-cols-1
-                            md:grid-cols-4
-                            gap-5">
+                    <div class="grid grid-cols-1
+                            md:grid-cols-4 gap-5">
 
 
+                        {{-- Term --}}
                         <div class="col-span-2">
 
-                            <label class="block text-sm
-                                      font-semibold mb-1">
-
+                            <label
+                                class="block text-sm
+                                      font-semibold text-gray-700 mb-1">
                                 Term of Payment
-
                             </label>
 
-                            <input type="text" name="term_of_payment"
-                                value="{{ old('term_of_payment', $purchaseOrder->term_of_payment) }}"
+                            <input type="text" name="term_of_payment" value="{{ old('term_of_payment', $purchaseOrder->term_of_payment) }}"
+                                placeholder="After the event"
                                 class="w-full rounded-lg
-                                   border-gray-300 focus:border-green-500
+                                   border-gray-300
+                                   focus:border-green-500
                                    focus:ring-green-500">
 
                         </div>
 
 
+                        {{-- Mode --}}
                         <div>
 
-                            <label class="block text-sm
-                                      font-semibold mb-1">
-
+                            <label
+                                class="block text-sm
+                                      font-semibold text-gray-700 mb-1">
                                 Mode of Payment
-
                             </label>
 
                             <select name="mode_of_payment"
                                 class="w-full rounded-lg
-                                   border-gray-300 focus:border-green-500
+                                   border-gray-300
+                                   focus:border-green-500
                                    focus:ring-green-500">
 
                                 <option value="">
                                     Select
                                 </option>
 
-                                @foreach (['Cash', 'Cheque', 'Bank Transfer'] as $mode)
-                                    <option value="{{ $mode }}" @selected(old('mode_of_payment', $purchaseOrder->mode_of_payment) === $mode)>
-                                        {{ $mode }}
-                                    </option>
-                                @endforeach
+                                <option value="Cash" @selected(old('mode_of_payment', $purchaseOrder->mode_of_payment) === 'Cash')>
+                                    Cash
+                                </option>
+
+                                <option value="Cheque" @selected(old('mode_of_payment', $purchaseOrder->mode_of_payment) === 'Cheque')>
+                                    Cheque
+                                </option>
+
+                                <option value="Bank Transfer" @selected(old('mode_of_payment', $purchaseOrder->mode_of_payment) === 'Bank Transfer')>
+                                    Bank Transfer
+                                </option>
 
                             </select>
 
                         </div>
 
 
+                        {{-- Currency --}}
                         <div>
 
-                            <label class="block text-sm
-                                      font-semibold mb-1">
-
+                            <label
+                                class="block text-sm
+                                      font-semibold text-gray-700 mb-1">
                                 Currency
-
                             </label>
 
                             <select name="currency"
                                 class="w-full rounded-lg
-                                   border-gray-300 focus:border-green-500
+                                   border-gray-300
+                                   focus:border-green-500
                                    focus:ring-green-500">
 
                                 <option value="USD" @selected(old('currency', $purchaseOrder->currency) === 'USD')>
                                     USD
                                 </option>
 
-                                <option value="KHR" @selected(old('currency', $purchaseOrder->currency) === 'KHR')>
+                                <option value="KHR" @selected(old('currency') === 'KHR')>
                                     KHR
                                 </option>
 
@@ -610,35 +620,40 @@
             </div>
 
 
-
             {{-- ===================================================== --}}
             {{-- ITEMS --}}
             {{-- ===================================================== --}}
 
-            <div
-                class="bg-white
-                    rounded-xl
-                    border border-gray-200
-                    shadow-sm mb-5">
+            <div class="bg-white rounded-xl border
+                    border-gray-200 shadow-sm mb-5">
 
                 <div
                     class="px-6 py-4
                         bg-green-600
-                        border-b rounded-t-xl
-                        flex justify-between
-                        items-center">
+                        border-b rounded-t-xl border-green-200
+                        flex flex-col md:flex-row
+                        md:items-center
+                        md:justify-between gap-3">
 
-                    <h2 class="font-bold text-white">
-                        Purchase Order Items
-                    </h2>
+                    <div>
+
+                        <h2 class="font-bold text-white">
+                            Purchase Order Items
+                        </h2>
+
+                        <p class="text-xs text-gray-200">
+                            Add goods or services to this purchase order.
+                        </p>
+
+                    </div>
 
 
                     <button type="button" id="addItem"
                         class="px-4 py-2
-                           rounded-lg
                            bg-white
-                           hover:bg-gray-200
+                           hover:bg-gray-50
                            text-green-600
+                           rounded-lg
                            font-semibold">
                         + Add Item
                     </button>
@@ -648,41 +663,67 @@
 
                 <div class="overflow-x-auto">
 
-                    <table class="min-w-[1100px] w-full">
+                    <table class="min-w-[1200px] w-full
+                           border-collapse">
 
-                        <thead class="bg-green-100 text-sm">
+                        <thead class="bg-green-100">
 
                             <tr>
 
-                                <th class="border px-3 py-3">
+                                <th
+                                    class="border px-3 py-3
+                                       text-sm font-bold
+                                       w-12">
                                     #
                                 </th>
 
-                                <th class="border px-3 py-3 text-left">
+                                <th
+                                    class="border px-3 py-3
+                                       text-sm font-bold
+                                       text-left
+                                       min-w-[350px]">
                                     Description
                                 </th>
 
-                                <th class="border px-3 py-3">
+                                <th
+                                    class="border px-3 py-3
+                                       text-sm font-bold
+                                       w-40">
                                     Required Date
                                 </th>
 
-                                <th class="border px-3 py-3">
+                                <th
+                                    class="border px-3 py-3
+                                       text-sm font-bold
+                                       w-24">
                                     Unit
                                 </th>
 
-                                <th class="border px-3 py-3">
-                                    Qty
+                                <th
+                                    class="border px-3 py-3
+                                       text-sm font-bold
+                                       w-28">
+                                    Quantity
                                 </th>
 
-                                <th class="border px-3 py-3">
+                                <th
+                                    class="border px-3 py-3
+                                       text-sm font-bold
+                                       w-36">
                                     Unit Price
                                 </th>
 
-                                <th class="border px-3 py-3">
+                                <th
+                                    class="border px-3 py-3
+                                       text-sm font-bold
+                                       w-36">
                                     Total
                                 </th>
 
-                                <th class="border px-3 py-3">
+                                <th
+                                    class="border px-3 py-3
+                                       text-sm font-bold
+                                       w-24">
                                     Action
                                 </th>
 
@@ -693,118 +734,108 @@
 
                         <tbody id="itemsBody">
 
-                            @foreach ($purchaseOrder->items as $index => $item)
+                            @forelse ($purchaseOrder->items as $index => $item)
                                 <tr>
 
-                                    <td
-                                        class="border px-3 py-3
-                                           text-center
-                                           item-number">
-
+                                    <td class="border px-3 py-3 text-center item-number">
                                         {{ $index + 1 }}
-
                                     </td>
-
-
-                                    <td class="border px-3 py-3 w-[550px]">
-
-                                        <textarea name="items[{{ $index }}][description]" rows="1" required
-                                            class="w-full rounded-md mt-1
-                                               border-gray-300 focus:border-green-500
-                                   focus:ring-green-500">{{ old("items.$index.description", $item->description) }}</textarea>
-
-                                    </td>
-
 
                                     <td class="border px-3 py-3">
+                                        <textarea
+                                            name="items[{{ $index }}][description]"
+                                            rows="1"
+                                            required
+                                            class="w-full rounded-md border-gray-300 focus:border-green-500 focus:ring-green-500">{{ old("items.$index.description", $item->description) }}</textarea>
+                                    </td>
 
-                                        <input type="date" name="items[{{ $index }}][required_date]"
+                                    <td class="border px-3 py-3">
+                                        <input
+                                            type="date"
+                                            name="items[{{ $index }}][required_date]"
                                             value="{{ old("items.$index.required_date", $item->required_date?->format('Y-m-d')) }}"
-                                            class="w-full rounded-md
-                                               border-gray-300 focus:border-green-500
-                                   focus:ring-green-500">
-
+                                            class="w-full rounded-md border-gray-300 focus:border-green-500 focus:ring-green-500">
                                     </td>
 
-
                                     <td class="border px-3 py-3">
-
-                                        <input type="text" name="items[{{ $index }}][unit]"
+                                        <input
+                                            type="text"
+                                            name="items[{{ $index }}][unit]"
                                             value="{{ old("items.$index.unit", $item->unit) }}"
-                                            class="w-full rounded-md
-                                               border-gray-300 focus:border-green-500
-                                   focus:ring-green-500">
-
+                                            class="w-full rounded-md border-gray-300 focus:border-green-500 focus:ring-green-500">
                                     </td>
 
-
                                     <td class="border px-3 py-3">
-
-                                        <input type="number" name="items[{{ $index }}][quantity]"
-                                            value="{{ old("items.$index.quantity", $item->quantity) }}" min="0"
-                                            step="0.01" required
-                                            class="quantity w-full text-right
-                                               rounded-md
-                                               border-gray-300 focus:border-green-500
-                                   focus:ring-green-500">
-
+                                        <input
+                                            type="number"
+                                            name="items[{{ $index }}][quantity]"
+                                            value="{{ old("items.$index.quantity", $item->quantity) }}"
+                                            min="0" step="0.01" required
+                                            class="quantity w-full rounded-md border-gray-300 text-right focus:border-green-500 focus:ring-green-500">
                                     </td>
 
-
                                     <td class="border px-3 py-3">
-
-                                        <input type="number" name="items[{{ $index }}][unit_price]"
+                                        <input
+                                            type="number"
+                                            name="items[{{ $index }}][unit_price]"
                                             value="{{ old("items.$index.unit_price", $item->unit_price) }}"
                                             min="0" step="0.01" required
-                                            class="unit-price w-full text-right
-                                               rounded-md
-                                               border-gray-300 focus:border-green-500
-                                   focus:ring-green-500">
-
+                                            class="unit-price w-full rounded-md border-gray-300 text-right focus:border-green-500 focus:ring-green-500">
                                     </td>
-
 
                                     <td class="border px-3 py-3">
-
-                                        <input type="text" value="{{ number_format($item->total, 2) }}" readonly
-                                            class="item-total w-full text-right
-                                               rounded-md
-                                               border-gray-300
-                                               bg-green-100 focus:border-green-500
-                                   focus:ring-green-500">
-
+                                        <input
+                                            type="text"
+                                            value="{{ number_format($item->total, 2) }}"
+                                            readonly
+                                            class="item-total w-full rounded-md border-gray-300 bg-green-50 text-right focus:border-green-500 focus:ring-green-500">
                                     </td>
 
-
-                                    <td class="border px-3 py-3
-                                           text-center">
-
-                                        <button type="button"
-                                            class="remove-item
-                                                inline-flex items-center justify-center
-                                                w-9 h-9
-                                                rounded-lg
-                                                bg-red-50
-                                                text-red-600
-                                                hover:bg-red-100
-                                                hover:text-red-700
-                                                transition"
-                                            title="Remove Item">
-
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none"
-                                                viewBox="0 0 24 24" stroke="currentColor">
-
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M6 18L18 6M6 6l12 12" />
-
+                                    <td class="border px-3 py-3 text-center">
+                                        <button type="button" class="remove-item inline-flex items-center justify-center w-9 h-9 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 transition" title="Remove Item">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                                             </svg>
-
                                         </button>
-
                                     </td>
 
                                 </tr>
-                            @endforeach
+                            @empty
+                                <tr>
+                                    <td class="border px-3 py-3 text-center item-number">1</td>
+                                    <td class="border px-3 py-3">
+                                        <textarea name="items[0][description]" rows="1" required placeholder="Description"
+                                            class="w-full rounded-md border-gray-300 focus:border-green-500 focus:ring-green-500"></textarea>
+                                    </td>
+                                    <td class="border px-3 py-3">
+                                        <input type="date" name="items[0][required_date]"
+                                            class="w-full rounded-md border-gray-300 focus:border-green-500 focus:ring-green-500">
+                                    </td>
+                                    <td class="border px-3 py-3">
+                                        <input type="text" name="items[0][unit]" value="pcs"
+                                            class="w-full rounded-md border-gray-300 focus:border-green-500 focus:ring-green-500">
+                                    </td>
+                                    <td class="border px-3 py-3">
+                                        <input type="number" name="items[0][quantity]" value="1" min="0" step="0.01" required
+                                            class="quantity w-full rounded-md border-gray-300 text-right focus:border-green-500 focus:ring-green-500">
+                                    </td>
+                                    <td class="border px-3 py-3">
+                                        <input type="number" name="items[0][unit_price]" value="0" min="0" step="0.01" required
+                                            class="unit-price w-full rounded-md border-gray-300 text-right focus:border-green-500 focus:ring-green-500">
+                                    </td>
+                                    <td class="border px-3 py-3">
+                                        <input type="text" value="0.00" readonly
+                                            class="item-total w-full rounded-md border-gray-300 bg-green-50 text-right">
+                                    </td>
+                                    <td class="border px-3 py-3 text-center">
+                                        <button type="button" class="remove-item inline-flex items-center justify-center w-9 h-9 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition" title="Remove Item">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                        </button>
+                                    </td>
+                                </tr>
+                            @endforelse
 
                         </tbody>
 
@@ -815,9 +846,8 @@
             </div>
 
 
-
             {{-- ===================================================== --}}
-            {{-- TOTALS --}}
+            {{-- NOTES + TOTAL --}}
             {{-- ===================================================== --}}
 
             <div class="grid grid-cols-1
@@ -825,19 +855,19 @@
                     gap-5 mb-5">
 
 
+                {{-- Notes --}}
                 <div
-                    class="bg-white
-                        rounded-xl
+                    class="bg-white rounded-xl
                         border border-gray-200
                         shadow-sm">
 
                     <div
                         class="px-6 py-4
-                            bg-green-600 rounded-t-xl
-                            border-b">
+                            bg-green-600
+                            border-b rounded-t-xl border-green-200">
 
                         <h2 class="font-bold text-white">
-                            Notes
+                            Note
                         </h2>
 
                     </div>
@@ -845,10 +875,12 @@
 
                     <div class="p-6">
 
-                        <textarea name="notes" rows="5"
+                        <textarea name="notes" rows="11" placeholder="Additional notes..."
                             class="w-full rounded-lg
-                               border-gray-300 focus:border-green-500
-                                   focus:ring-green-500">{{ old('notes', $purchaseOrder->notes) }}</textarea>
+                               border-gray-300
+                               focus:border-green-500
+                               focus:ring-green-500">{{ old('notes', $purchaseOrder->notes) }}</textarea>
+
 
                         <div
                             class="mt-4
@@ -878,16 +910,16 @@
                 </div>
 
 
-                <div
-                    class="bg-white
-                        rounded-xl
+                {{-- Total --}}
+                <div class="bg-white rounded-xl
                         border border-gray-200
                         shadow-sm">
 
                     <div
                         class="px-6 py-4
-                            bg-green-600 rounded-t-xl
-                            border-b">
+                            bg-green-600
+                            border-b rounded-t-xl
+                            border-green-200">
 
                         <h2 class="font-bold text-white">
                             Order Summary
@@ -899,20 +931,92 @@
                     <div class="p-6 space-y-5">
 
 
-                        <div class="flex justify-between">
+                        {{-- ========================================================= --}}
+                        {{-- SUB TOTAL --}}
+                        {{-- ========================================================= --}}
 
-                            <span>
+                        <div class="flex justify-between items-center">
+
+                            <span class="font-semibold text-gray-600">
                                 Sub Total
                             </span>
 
-                            <strong>
+                            <span class="font-bold">
+
+                                <span class="currency-symbol">
+                                    $
+                                </span>
+
                                 <span id="subtotal">
                                     0.00
                                 </span>
-                            </strong>
+
+                            </span>
 
                         </div>
 
+
+                        <div class="flex justify-between items-center">
+
+                            <label for="service_charge" class="font-semibold text-gray-600">
+
+                                Service Charge
+
+                            </label>
+
+                            <div class="flex items-center gap-2">
+
+                                <input type="number" id="service_charge" name="service_charge"
+                                    value="{{ old('service_charge', $purchaseOrder->service_charge) }}" min="0" step="0.01" placeholder="0"
+                                    class="w-24 rounded-md py-2
+                                        border-gray-300
+                                        text-right
+                                        focus:border-green-500
+                                        focus:ring-green-500">
+
+                                <span class="font-semibold text-gray-600">
+                                    %
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        {{-- ========================================================= --}}
+                        {{-- OTHER TAX CHARGE % --}}
+                        {{-- ========================================================= --}}
+
+                        <div class="flex justify-between items-center">
+
+                            <label for="other_tax_charge" class="font-semibold text-gray-600">
+
+                                Other Tax Charge
+
+                            </label>
+
+                            <div class="flex items-center gap-2">
+
+                                <input type="number" id="other_tax_charge" name="other_tax_charge"
+                                    value="{{ old('other_tax_charge', $purchaseOrder->other_tax_charge) }}" min="0" step="0.01" placeholder="0"
+                                    class="w-24 rounded-md py-2
+                                            border-gray-300
+                                            text-right
+                                            focus:border-green-500
+                                            focus:ring-green-500">
+
+                                <span class="font-semibold text-gray-600">
+                                    %
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        {{-- ========================================================= --}}
+                        {{-- VAT --}}
+                        {{-- ========================================================= --}}
 
                         <div>
 
@@ -921,21 +1025,37 @@
                                     justify-between
                                     items-center">
 
-                                <span>
-                                    VAT
-                                </span>
+                                <label for="tax_percent" class="font-semibold text-gray-600">
 
-                                <input type="number" id="tax_percent" name="tax_percent"
-                                    value="{{ old('tax_percent', $purchaseOrder->tax_percent) }}" min="0"
-                                    step="0.01"
-                                    class="w-20 py-1
-                                       rounded-md
-                                       border-gray-300
-                                       text-right focus:border-green-500
-                                   focus:ring-green-500">
+                                    Tax (VAT or Withholding)
+
+                                </label>
+
+
+                                <div
+                                    class="flex
+                                        items-center
+                                        gap-2">
+
+                                    <input type="number" id="tax_percent" name="tax_percent"
+                                        value="{{ old('tax_percent', $purchaseOrder->tax_percent) }}" min="0" step="0.01" placeholder="0"
+                                        class="w-24 py-2
+                                            rounded-md
+                                            border-gray-300
+                                            text-right
+                                            focus:border-green-500
+                                            focus:ring-green-500">
+
+                                    <span class="font-semibold text-gray-600">
+                                        %
+                                    </span>
+
+                                </div>
 
                             </div>
 
+
+                            {{-- VAT Amount --}}
 
                             <div
                                 class="flex
@@ -943,12 +1063,20 @@
                                     mt-3
                                     text-sm">
 
-                                <span>
+                                <span class="text-gray-500">
                                     VAT Amount
                                 </span>
 
-                                <span id="taxAmount">
-                                    0.00
+                                <span>
+
+                                    <span class="currency-symbol">
+                                        $
+                                    </span>
+
+                                    <span id="taxAmount">
+                                        0.00
+                                    </span>
+
                                 </span>
 
                             </div>
@@ -956,43 +1084,66 @@
                         </div>
 
 
-                        <div class="flex justify-between">
+                        {{-- ========================================================= --}}
+                        {{-- OTHER CHARGES --}}
+                        {{-- ========================================================= --}}
 
-                            <label
-                                class="block
-                                      font-semibold
-                                      mb-2">
+                        <div class="flex justify-between items-center">
+
+                            <label for="other_charges" class="font-semibold text-gray-600">
 
                                 Other Charges
 
                             </label>
 
                             <input type="number" id="other_charges" name="other_charges"
-                                value="{{ old('other_charges', $purchaseOrder->other_charges) }}" min="0"
-                                step="0.01"
-                                class="w-64 py-1 rounded-md text-right
-                                   border-gray-300">
+                                value="{{ old('other_charges', $purchaseOrder->other_charges) }}" min="0" step="0.01" placeholder="0.00"
+                                class="w-28 rounded-md py-2
+                                    border-gray-300
+                                    text-right
+                                    focus:border-green-500
+                                    focus:ring-green-500">
 
                         </div>
 
 
-                        <div class="border-t
+                        {{-- ========================================================= --}}
+                        {{-- GRAND TOTAL --}}
+                        {{-- ========================================================= --}}
+
+                        <div
+                            class="border-t
+                                border-gray-200
                                 pt-5">
 
                             <div
                                 class="flex
                                     justify-between
-                                    text-xl
-                                    font-bold">
+                                    items-center">
 
-                                <span>
-                                    TOTAL
+                                <span
+                                    class="text-lg
+                                        font-bold
+                                        text-gray-800">
+
+                                    Total
+
                                 </span>
 
-                                <span class="text-green-700">
+
+                                <span
+                                    class="text-2xl
+                                        font-bold
+                                        text-green-700">
+
+                                    <span class="currency-symbol">
+                                        $
+                                    </span>
+
                                     <span id="grandTotal">
                                         0.00
                                     </span>
+
                                 </span>
 
                             </div>
@@ -1008,21 +1159,20 @@
 
 
             {{-- ===================================================== --}}
-            {{-- ORDER / APPROVAL / VENDOR --}}
+            {{-- ORDERED / APPROVED --}}
             {{-- ===================================================== --}}
 
-            <div
-                class="bg-white
-                    rounded-xl
+            <div class="bg-white rounded-xl
                     border border-gray-200
                     shadow-sm mb-5">
 
-                <div class="px-6 py-4
-                        bg-green-600 rounded-t-xl
-                        border-b">
+                <div
+                    class="px-6 py-4
+                        bg-green-600
+                        border-b rounded-t-xl border-green-200">
 
                     <h2 class="font-bold text-white">
-                        Order / Approval / Vendor
+                        Ordered By / Approved By
                     </h2>
 
                 </div>
@@ -1032,66 +1182,80 @@
 
                     <div
                         class="grid grid-cols-1
-                            md:grid-cols-2
+                            md:grid-cols-4
                             gap-5">
 
 
+                        {{-- Ordered --}}
                         <div>
 
-                            <label class="block text-sm
-                                      font-semibold mb-1">
+                            <label
+                                class="block text-sm
+                                      font-semibold
+                                      text-gray-700 mb-1">
                                 Ordered By
                             </label>
 
-                            <input type="text" name="ordered_by"
-                                value="{{ old('ordered_by', $purchaseOrder->ordered_by) }}"
+                            <input type="text" name="ordered_by" value="{{ old('ordered_by', $purchaseOrder->ordered_by) }}"
                                 class="w-full rounded-lg
-                                   border-gray-300">
+                                   border-gray-300
+                                   focus:border-green-500
+                                   focus:ring-green-500">
 
                         </div>
 
 
                         <div>
 
-                            <label class="block text-sm
-                                      font-semibold mb-1">
+                            <label
+                                class="block text-sm
+                                      font-semibold
+                                      text-gray-700 mb-1">
                                 Ordered Date
                             </label>
 
-                            <input type="date" name="ordered_date"
-                                value="{{ old('ordered_date', $purchaseOrder->ordered_date?->format('Y-m-d')) }}"
+                            <input type="date" name="ordered_date" value="{{ old('ordered_date', $purchaseOrder->ordered_date?->format('Y-m-d')) }}"
                                 class="w-full rounded-lg
-                                   border-gray-300">
+                                   border-gray-300
+                                   focus:border-green-500
+                                   focus:ring-green-500">
 
                         </div>
 
 
+                        {{-- Approved --}}
                         <div>
 
-                            <label class="block text-sm
-                                      font-semibold mb-1">
+                            <label
+                                class="block text-sm
+                                      font-semibold
+                                      text-gray-700 mb-1">
                                 Approved By
                             </label>
 
-                            <input type="text" name="approved_by"
-                                value="{{ old('approved_by', $purchaseOrder->approved_by) }}"
+                            <input type="text" name="approved_by" value="{{ old('approved_by', $purchaseOrder->approved_by) }}"
                                 class="w-full rounded-lg
-                                   border-gray-300">
+                                   border-gray-300
+                                   focus:border-green-500
+                                   focus:ring-green-500">
 
                         </div>
 
 
                         <div>
 
-                            <label class="block text-sm
-                                      font-semibold mb-1">
+                            <label
+                                class="block text-sm
+                                      font-semibold
+                                      text-gray-700 mb-1">
                                 Approved Date
                             </label>
 
-                            <input type="date" name="approved_date"
-                                value="{{ old('approved_date', $purchaseOrder->approved_date?->format('Y-m-d')) }}"
+                            <input type="date" name="approved_date" value="{{ old('approved_date', $purchaseOrder->approved_date?->format('Y-m-d')) }}"
                                 class="w-full rounded-lg
-                                   border-gray-300">
+                                   border-gray-300
+                                   focus:border-green-500
+                                   focus:ring-green-500">
 
                         </div>
 
@@ -1104,8 +1268,9 @@
 
 
             {{-- ===================================================== --}}
-                {{-- ACTION BUTTONS --}}
+            {{-- ACTION BUTTONS --}}
             {{-- ===================================================== --}}
+
             <div class="mt-5">
 
                 <div
@@ -1116,8 +1281,8 @@
                         gap-3">
 
 
-                    {{-- Cancel / Back --}}
-                    <a href="{{ route('purchase-orders.index', $purchaseOrder) }}"
+                    {{-- Cancel --}}
+                    <a href="{{ route('purchase-orders.index') }}"
                         class="group
                             inline-flex items-center
                             justify-center
@@ -1129,7 +1294,6 @@
                             text-gray-700
                             text-sm
                             font-semibold
-                            shadow-sm
                             hover:bg-gray-50
                             hover:border-gray-400
                             transition-all duration-200
@@ -1141,10 +1305,10 @@
                         {{-- Back Icon --}}
                         <svg xmlns="http://www.w3.org/2000/svg"
                             class="w-4 h-4
-                                transition-transform
-                                duration-200
-                                group-hover:-translate-x-1"
-                                fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                       transition-transform
+                       duration-200
+                       group-hover:-translate-x-1"
+                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
 
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
 
@@ -1157,7 +1321,7 @@
                     </a>
 
 
-                    {{-- Update Purchase Order --}}
+                    {{-- Save Purchase Order --}}
                     <button type="submit"
                         class="group
                             inline-flex items-center
@@ -1179,22 +1343,22 @@
                             focus:ring-green-500
                             focus:ring-offset-2">
 
-                        {{-- Update Icon --}}
+                        {{-- Save Icon --}}
                         <svg xmlns="http://www.w3.org/2000/svg"
                             class="w-4 h-4
-                                transition-transform
-                                duration-200
-                                group-hover:rotate-[-8deg]"
-                                fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                       transition-transform
+                       duration-200
+                       group-hover:scale-110"
+                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
 
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M20 11a8.1 8.1 0 01-8 8
-                           8 8 0 117.2-11.5
-                           M20 4v6h-6" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M5 4h11l3 3v13H5V4z
+                                                   M8 4v5h8V4
+                                                   M8 20v-6h8v6" />
 
                         </svg>
 
                         <span>
-                            Update
+                            Save
                         </span>
 
                     </button>
@@ -1207,38 +1371,49 @@
 
     </div>
 
-
-
     <script>
         document.addEventListener('DOMContentLoaded', function() {
 
-            let itemIndex =
-                {{ $purchaseOrder->items->count() }};
-
+            let itemIndex = {{ $purchaseOrder->items->count() }};
 
             const itemsBody =
                 document.getElementById('itemsBody');
 
-
-            const addItem =
+            const addItemButton =
                 document.getElementById('addItem');
-
-
-            const taxPercent =
-                document.getElementById('tax_percent');
-
-
-            const otherCharges =
-                document.getElementById('other_charges');
 
 
             /*
             |--------------------------------------------------------------------------
-            | Add
+            | Summary Inputs
             |--------------------------------------------------------------------------
             */
 
-            addItem.addEventListener('click', function() {
+            const serviceChargeInput =
+                document.getElementById('service_charge');
+
+            const otherTaxChargeInput =
+                document.getElementById('other_tax_charge');
+
+            const taxInput =
+                document.getElementById('tax_percent');
+
+            const otherChargesInput =
+                document.getElementById('other_charges');
+
+            // Ensure the edit form always has one editable item row.
+            if (itemsBody && itemsBody.querySelectorAll('tr').length === 0) {
+                addItemButton.click();
+            }
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Add Item
+            |--------------------------------------------------------------------------
+            */
+
+            addItemButton.addEventListener('click', function() {
 
                 const row =
                     document.createElement('tr');
@@ -1246,10 +1421,10 @@
 
                 row.innerHTML = `
 
-            <td class="border px-3 py-3
-                       text-center item-number">
+            <td class="border px-3 py-3 text-center item-number">
                 ${itemIndex + 1}
             </td>
+
 
             <td class="border px-3 py-3">
 
@@ -1257,12 +1432,15 @@
                     name="items[${itemIndex}][description]"
                     rows="1"
                     required
-                    class="w-full rounded-md mt-1
-                           border-gray-300 focus:border-green-500
-                                   focus:ring-green-500"
+                    placeholder="Description"
+                    class="w-full rounded-md
+                           border-gray-300
+                           focus:border-green-500
+                           focus:ring-green-500"
                 ></textarea>
 
             </td>
+
 
             <td class="border px-3 py-3">
 
@@ -1270,58 +1448,64 @@
                     type="date"
                     name="items[${itemIndex}][required_date]"
                     class="w-full rounded-md
-                           border-gray-300 focus:border-green-500
-                                   focus:ring-green-500"
+                           border-gray-300
+                           focus:border-green-500
+                           focus:ring-green-500"
                 >
 
             </td>
+
 
             <td class="border px-3 py-3">
 
                 <input
                     type="text"
                     name="items[${itemIndex}][unit]"
-                    value="pcs"
+                    placeholder="pcs"
                     class="w-full rounded-md
-                           border-gray-300 focus:border-green-500
-                                   focus:ring-green-500"
+                           border-gray-300
+                           focus:border-green-500
+                           focus:ring-green-500"
                 >
 
             </td>
+
 
             <td class="border px-3 py-3">
 
                 <input
                     type="number"
                     name="items[${itemIndex}][quantity]"
-                    value="1"
                     min="0"
                     step="0.01"
                     required
-                    class="quantity w-full text-right
-                           rounded-md
-                           border-gray-300 focus:border-green-500
-                                   focus:ring-green-500"
+                    placeholder="0"
+                    class="quantity w-full rounded-md
+                           border-gray-300
+                           focus:border-green-500
+                           focus:ring-green-500"
                 >
 
             </td>
+
 
             <td class="border px-3 py-3">
 
                 <input
                     type="number"
                     name="items[${itemIndex}][unit_price]"
-                    value="0"
                     min="0"
                     step="0.01"
                     required
-                    class="unit-price w-full text-right
-                           rounded-md
-                           border-gray-300 focus:border-green-500
-                                   focus:ring-green-500"
+                    placeholder="0.00"
+                    class="unit-price w-full rounded-md
+                           border-gray-300
+                           focus:border-green-500
+                           focus:ring-green-500"
                 >
 
             </td>
+
 
             <td class="border px-3 py-3">
 
@@ -1329,30 +1513,31 @@
                     type="text"
                     value="0.00"
                     readonly
-                    class="item-total w-full
-                           rounded-md text-right
+                    class="item-total w-full rounded-md
                            border-gray-300
-                           bg-green-100 focus:border-green-500
-                                   focus:ring-green-500"
+                           bg-green-50
+                           focus:border-green-500
+                           focus:ring-green-500"
                 >
 
             </td>
 
-            <td class="border px-3 py-3
-                       text-center">
+
+            <td class="border px-3 py-3 text-center">
 
                 <button
                     type="button"
                     class="remove-item
-                        inline-flex items-center justify-center
-                        w-9 h-9
-                        rounded-lg
-                        bg-red-50
-                        text-red-600
-                        hover:bg-red-100
-                        hover:text-red-700
-                        transition"
-                    title="Remove Item">
+                           inline-flex items-center justify-center
+                           w-9 h-9
+                           rounded-lg
+                           bg-red-50
+                           text-red-600
+                           hover:bg-red-100
+                           hover:text-red-700
+                           transition"
+                    title="Remove Item"
+                >
 
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -1365,13 +1550,15 @@
                             stroke-linecap="round"
                             stroke-linejoin="round"
                             stroke-width="2"
-                            d="M6 18L18 6M6 6l12 12" />
+                            d="M6 18L18 6M6 6l12 12"
+                        />
 
                     </svg>
 
                 </button>
 
             </td>
+
         `;
 
 
@@ -1379,16 +1566,12 @@
 
                 itemIndex++;
 
-                calculate();
+                updateNumbers();
+
+                calculateTotals();
 
             });
 
-
-            /*
-            |--------------------------------------------------------------------------
-            | Remove
-            |--------------------------------------------------------------------------
-            */
 
             /*
             |--------------------------------------------------------------------------
@@ -1401,9 +1584,11 @@
                 const removeButton =
                     event.target.closest('.remove-item');
 
+
                 if (!removeButton) {
                     return;
                 }
+
 
                 const rows =
                     itemsBody.querySelectorAll('tr');
@@ -1411,7 +1596,9 @@
 
                 if (rows.length <= 1) {
 
-                    alert('At least one item is required.');
+                    alert(
+                        'At least one item is required.'
+                    );
 
                     return;
                 }
@@ -1424,43 +1611,57 @@
 
                 updateNumbers();
 
-                calculate();
+                calculateTotals();
 
             });
 
 
             /*
             |--------------------------------------------------------------------------
-            | Numbers
+            | Update Item Numbers
             |--------------------------------------------------------------------------
             */
 
             function updateNumbers() {
+
                 itemsBody
                     .querySelectorAll('tr')
-                    .forEach(
-                        function(row, index) {
+                    .forEach(function(row, index) {
 
+                        const number =
                             row.querySelector(
-                                    '.item-number'
-                                ).textContent =
+                                '.item-number'
+                            );
+
+
+                        if (number) {
+
+                            number.textContent =
                                 index + 1;
 
                         }
-                    );
+
+                    });
+
             }
 
 
             /*
             |--------------------------------------------------------------------------
-            | Calculate
+            | Calculate Totals
             |--------------------------------------------------------------------------
             */
 
-            function calculate() {
+            function calculateTotals() {
 
                 let subtotal = 0;
 
+
+                /*
+                |--------------------------------------------------------------------------
+                | Calculate Item Subtotal
+                |--------------------------------------------------------------------------
+                */
 
                 itemsBody
                     .querySelectorAll('tr')
@@ -1474,7 +1675,7 @@
                             ) || 0;
 
 
-                        const price =
+                        const unitPrice =
                             parseFloat(
                                 row.querySelector(
                                     '.unit-price'
@@ -1483,7 +1684,7 @@
 
 
                         const total =
-                            quantity * price;
+                            quantity * unitPrice;
 
 
                         const totalInput =
@@ -1492,8 +1693,12 @@
                             );
 
 
-                        totalInput.value =
-                            total.toFixed(2);
+                        if (totalInput) {
+
+                            totalInput.value =
+                                total.toFixed(2);
+
+                        }
 
 
                         subtotal += total;
@@ -1501,64 +1706,265 @@
                     });
 
 
-                const tax =
-                    subtotal *
-                    (
-                        parseFloat(
-                            taxPercent.value
-                        ) || 0
-                    ) / 100;
+                /*
+                |--------------------------------------------------------------------------
+                | Service Charge %
+                |--------------------------------------------------------------------------
+                */
 
-
-                const other =
+                const servicePercent =
                     parseFloat(
-                        otherCharges.value
+                        serviceChargeInput?.value
                     ) || 0;
 
 
-                const total =
+                /*
+                |--------------------------------------------------------------------------
+                | Other Tax Charge %
+                |--------------------------------------------------------------------------
+                */
+
+                const otherTaxPercent =
+                    parseFloat(
+                        otherTaxChargeInput?.value
+                    ) || 0;
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | VAT %
+                |--------------------------------------------------------------------------
+                */
+
+                const taxPercent =
+                    parseFloat(
+                        taxInput?.value
+                    ) || 0;
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Other Charges - Fixed Amount
+                |--------------------------------------------------------------------------
+                */
+
+                const otherCharges =
+                    parseFloat(
+                        otherChargesInput?.value
+                    ) || 0;
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Calculate Service Charge Amount
+                |--------------------------------------------------------------------------
+                */
+
+                const serviceAmount =
+                    subtotal *
+                    servicePercent /
+                    100;
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Calculate Other Tax Charge Amount
+                |--------------------------------------------------------------------------
+                */
+
+                const otherTaxAmount =
+                    subtotal *
+                    otherTaxPercent /
+                    100;
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Calculate VAT Amount
+                |--------------------------------------------------------------------------
+                */
+
+                const taxAmount =
+                    subtotal *
+                    taxPercent /
+                    100;
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Calculate Grand Total
+                |--------------------------------------------------------------------------
+                */
+
+                const grandTotal =
                     subtotal +
-                    tax +
-                    other;
+                    serviceAmount +
+                    otherTaxAmount +
+                    taxAmount +
+                    otherCharges;
 
 
-                document.getElementById(
+                /*
+                |--------------------------------------------------------------------------
+                | Display Sub Total
+                |--------------------------------------------------------------------------
+                */
+
+                const subtotalElement =
+                    document.getElementById(
                         'subtotal'
-                    ).textContent =
-                    subtotal.toFixed(2);
+                    );
 
 
-                document.getElementById(
+                if (subtotalElement) {
+
+                    subtotalElement.textContent =
+                        subtotal.toFixed(2);
+
+                }
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Display Service Charge Amount
+                |--------------------------------------------------------------------------
+                */
+
+                const serviceAmountElement =
+                    document.getElementById(
+                        'serviceChargeAmount'
+                    );
+
+
+                if (serviceAmountElement) {
+
+                    serviceAmountElement.textContent =
+                        serviceAmount.toFixed(2);
+
+                }
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Display Other Tax Charge Amount
+                |--------------------------------------------------------------------------
+                */
+
+                const otherTaxAmountElement =
+                    document.getElementById(
+                        'otherTaxChargeAmount'
+                    );
+
+
+                if (otherTaxAmountElement) {
+
+                    otherTaxAmountElement.textContent =
+                        otherTaxAmount.toFixed(2);
+
+                }
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Display VAT Amount
+                |--------------------------------------------------------------------------
+                */
+
+                const taxAmountElement =
+                    document.getElementById(
                         'taxAmount'
-                    ).textContent =
-                    tax.toFixed(2);
+                    );
 
 
-                document.getElementById(
+                if (taxAmountElement) {
+
+                    taxAmountElement.textContent =
+                        taxAmount.toFixed(2);
+
+                }
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Display Grand Total
+                |--------------------------------------------------------------------------
+                */
+
+                const grandTotalElement =
+                    document.getElementById(
                         'grandTotal'
-                    ).textContent =
-                    total.toFixed(2);
+                    );
+
+
+                if (grandTotalElement) {
+
+                    grandTotalElement.textContent =
+                        grandTotal.toFixed(2);
+
+                }
 
             }
 
 
             /*
             |--------------------------------------------------------------------------
-            | Inputs
+            | Input Events
             |--------------------------------------------------------------------------
             */
 
             document.addEventListener(
                 'input',
-                function() {
+                function(event) {
 
-                    calculate();
+                    if (
+
+                        event.target.classList.contains(
+                            'quantity'
+                        )
+
+                        ||
+
+                        event.target.classList.contains(
+                            'unit-price'
+                        )
+
+                        ||
+
+                        event.target.id ===
+                        'service_charge'
+
+                        ||
+
+                        event.target.id ===
+                        'other_tax_charge'
+
+                        ||
+
+                        event.target.id ===
+                        'tax_percent'
+
+                        ||
+
+                        event.target.id ===
+                        'other_charges'
+
+                    ) {
+
+                        calculateTotals();
+
+                    }
 
                 }
             );
 
 
-            calculate();
+            /*
+            |--------------------------------------------------------------------------
+            | Initial Calculation
+            |--------------------------------------------------------------------------
+            */
+
+            calculateTotals();
 
         });
     </script>

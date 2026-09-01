@@ -85,7 +85,7 @@
 
                     {{-- RECEIVED FROM --}}
                     <div class="grid grid-cols-12">
-                        <div class="col-span-8 border-r border-black px-2 py-1.5 text-[14px] bg-green-100">
+                        <div class="col-span-8 border-r border-black px-2 py-1.5 text-[14px]">
                             <span class="font-bold">RECEIVED FROM</span>
                             <span class="mx-2">:</span>
                         </div>
@@ -108,7 +108,7 @@
                     {{-- PAYMENT FOR + AMOUNT --}}
                     <div class="grid grid-cols-12 border-t border-black">
                         {{-- PAYMENT FOR --}}
-                        <div class="col-span-8 border-r border-black bg-green-100 min-h-[90px]">
+                        <div class="col-span-8 border-r border-black min-h-[90px]">
                             <div class="px-2 py-2 text-[14px] font-bold">
                                 PAYMENT FOR
                                 <span class="mx-2">:</span>
@@ -119,7 +119,7 @@
                         </div>
 
                         {{-- AMOUNT --}}
-                        <div class="col-span-4 bg-green-100 min-h-[90px]">
+                        <div class="col-span-4 min-h-[90px]">
                             <div class="px-2 pt-2 text-[14px] font-bold">AMOUNT</div>
                             <div class="px-2 pt-1 text-[16px] font-bold">
                                 
@@ -252,7 +252,7 @@
         .watermark img {
             width: auto;
             height: 250px;
-            opacity: 0.06;
+            opacity: 0.08;
         }
 
         @media print {

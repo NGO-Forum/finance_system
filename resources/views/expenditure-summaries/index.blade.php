@@ -20,12 +20,22 @@
 
                 </div>
 
-                <a href="{{ route('expenditure-summaries.create') }}"
-                    class="bg-white text-green-600 px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition">
+                <div class="flex justify-between gap-6">
 
-                    + New Summary
+                    <a href="{{ route('expenditure-summaries.template.pdf') }}" target="_blank"
+                        class="inline-flex items-center gap-2 px-4 py-2
+                            bg-red-600 hover:bg-red-700
+                            text-white rounded-lg font-medium">
+                        PDF Template
+                    </a>
 
-                </a>
+                    <a href="{{ route('expenditure-summaries.create') }}"
+                        class="bg-white text-green-600 px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition">
+
+                        + New Summary
+
+                    </a>
+                </div>
 
             </div>
 
@@ -187,15 +197,14 @@
                                             class="hidden absolute right-0 -mt-4 w-12 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden z-50">
 
 
-                                            @if ($summary->status === 'Approved')
-                                                <a href="{{ route('expenditure-summaries.pdf', $summary) }}"
-                                                    target="_blank"
-                                                    class="w-full flex items-center px-4 py-3 text-red-600 hover:bg-red-50">
+                                            {{-- @if ($summary->status === 'Approved') --}}
+                                            <a href="{{ route('expenditure-summaries.pdf', $summary) }}" target="_blank"
+                                                class="w-full flex items-center px-4 py-3 text-red-600 hover:bg-red-50">
 
-                                                    <i class="fas fa-file-pdf mr-2"></i>
+                                                <i class="fas fa-file-pdf mr-2"></i>
 
-                                                </a>
-                                            @endif
+                                            </a>
+                                            {{-- @endif --}}
 
                                             <a href="{{ route('expenditure-summaries.show', $summary) }}"
                                                 class="flex items-center px-4 py-3 text-blue-600 hover:bg-blue-50">

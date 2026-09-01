@@ -355,4 +355,88 @@ class VerbalQuoteController extends Controller
             ], 500);
         }
     }
+
+
+    public function templatePdf()
+    {
+
+        $html = view('verbal-quotes.template')->render();
+
+        // Remove non-breaking spaces
+        $html = str_replace("\xc2\xa0", ' ', $html);
+
+        try {
+
+            $mpdf = new Mpdf([
+                'mode'             => 'utf-8',
+                'format'           => 'A4',
+
+                'margin_left'      => 8,
+                'margin_right'     => 8,
+                'margin_top'       => 8,
+                'margin_bottom'    => 8,
+
+                'margin_header'    => 5,
+                'margin_footer'    => 5,
+
+                'autoScriptToLang' => true,
+                'autoLangToFont'   => true,
+
+                'tempDir'          => storage_path('app/mpdf'),
+            ]);
+
+            $mpdf->SetTitle(
+                'Verbal Quotation FM02-09 Template'
+            );
+
+            $mpdf->SetAuthor(
+                config('app.name')
+            );
+
+            $mpdf->SetDisplayMode('fullpage');
+
+
+            $logo = public_path('images/logo.png');
+
+            if (file_exists($logo)) {
+
+                $mpdf->SetWatermarkImage(
+                    $logo,
+                    0.06,
+                    [120, 100],
+                    [45, 70]
+                );
+
+                $mpdf->showWatermarkImage = true;
+            }
+
+
+            $mpdf->WriteHTML(
+                $html,
+                HTMLParserMode::DEFAULT_MODE
+            );
+
+
+            return response(
+                $mpdf->Output(
+                    'Verbal_Quote_FM02-09_Template.pdf',
+                    Destination::STRING_RETURN
+                ),
+                200,
+                [
+                    'Content-Type' => 'application/pdf',
+
+                    'Content-Disposition' =>
+                    'inline; filename="Verbal_Quote_FM02-09_Template.pdf"',
+                ]
+            );
+        } catch (\Throwable $e) {
+
+            return response()->json([
+                'message' => $e->getMessage(),
+                'line'    => $e->getLine(),
+                'file'    => $e->getFile(),
+            ], 500);
+        }
+    }
 }

@@ -45,6 +45,14 @@ class PurchaseRequest extends Model
 
     ];
 
+    protected $casts = [
+        'request_date' => 'date',
+        'reviewed_at' => 'datetime',
+        'approved_at' => 'datetime',
+        'grand_total' => 'decimal:2',
+    ];
+
+
     public function items()
     {
         return $this->hasMany(PurchaseRequestItem::class);

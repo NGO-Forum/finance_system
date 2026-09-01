@@ -157,7 +157,8 @@
 
                             </label>
 
-                            <input type="text" name="budget_code" value="{{ old('budget_code', $claim->budget_code) }}" required
+                            <input type="text" name="budget_code" value="{{ old('budget_code', $claim->budget_code) }}"
+                                required
                                 class="w-full rounded-xl border-gray-300 focus:ring-green-500 focus:border-green-500">
 
                         </div>
@@ -176,7 +177,7 @@
 
                         </div>
 
-                        
+
                         {{-- Donor Code --}}
                         <div>
 
@@ -186,7 +187,8 @@
 
                             </label>
 
-                            <input type="text" name="donor_code" value="{{ old('donor_code', $claim->donor_code) }}" required
+                            <input type="text" name="donor_code" value="{{ old('donor_code', $claim->donor_code) }}"
+                                required
                                 class="w-full rounded-xl border-gray-300 focus:ring-green-500 focus:border-green-500">
 
                         </div>
@@ -288,6 +290,10 @@
                                 </th>
 
                                 <th class="px-4 py-4 border">
+                                    Dist (km)
+                                </th>
+
+                                <th class="px-4 py-4 border">
                                     Purpose
                                 </th>
 
@@ -320,7 +326,8 @@
 
                                     <td class="border px-4 py-4 w-20">
 
-                                        <input type="date" name="travel_date[]" value="{{ \Carbon\Carbon::parse($travel->travel_date)->format('Y-m-d') }}"
+                                        <input type="date" name="travel_date[]"
+                                            value="{{ \Carbon\Carbon::parse($travel->travel_date)->format('Y-m-d') }}"
                                             class="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500">
 
                                     </td>
@@ -338,6 +345,15 @@
                                         <input type="text" name="to_location[]" value="{{ $travel->to_location }}"
                                             placeholder="Destination"
                                             class="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500">
+
+                                    </td>
+
+                                    <td class="border px-4 py-4">
+                                        <input type="number" name="km[]" step="0.01" min="0" value="{{ $travel->km }}"
+                                            class="w-24 rounded-lg border border-slate-300
+                                            px-3 py-2 text-sm
+                                            focus:border-green-500
+                                            focus:ring-4 focus:ring-green-100">
 
                                     </td>
 
@@ -566,7 +582,8 @@
 
                                     <td class="border px-4 py-4">
 
-                                        <input type="date" name="expense_date[]" value="{{ \Carbon\Carbon::parse($item->expense_date)->format('Y-m-d') }}"
+                                        <input type="date" name="expense_date[]"
+                                            value="{{ \Carbon\Carbon::parse($item->expense_date)->format('Y-m-d') }}"
                                             class="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500">
 
                                     </td>
@@ -628,7 +645,7 @@
                                     <td class="border px-4 py-4 text-center">
 
                                         <button type="button" onclick="removeExpenseRow(this)"
-                                            class="inline-flex items-center gapx-4 py-4 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition">
+                                            class="inline-flex items-center gap-4 py-4 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition">
 
                                             <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none"
                                                 viewBox="0 0 24 24" stroke="currentColor">

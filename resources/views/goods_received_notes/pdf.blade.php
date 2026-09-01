@@ -705,7 +705,7 @@
 
 
                     <th colspan="5">
-                        QUANTITY / RESULT
+                        QUANTITY
                     </th>
 
                 </tr>

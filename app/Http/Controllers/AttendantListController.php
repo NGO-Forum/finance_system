@@ -55,7 +55,9 @@ class AttendantListController extends Controller
 
             'title' => 'required|string|max:255',
 
-            'activity_date' => 'required|date',
+            'start_date' => 'required|date',
+
+            'end_date' => 'required|date',
 
             'start_time' => 'required|date_format:H:i',
 
@@ -72,6 +74,8 @@ class AttendantListController extends Controller
             'donor_logo_ids.*' => 'exists:donor_logos,id',
 
             'max_participants' => 'nullable|integer|min:1',
+
+            'registration_closed_at' => 'nullable|date|after:now',
 
         ]);
 
@@ -92,7 +96,9 @@ class AttendantListController extends Controller
 
             'title' => $request->title,
 
-            'activity_date' => $request->activity_date,
+            'start_date' => $request->start_date,
+
+            'end_date' => $request->end_date,
 
             'start_time' => $request->start_time,
 
@@ -101,6 +107,8 @@ class AttendantListController extends Controller
             'venue' => $request->venue,
 
             'registration_enabled' => $request->boolean('registration_enabled'),
+
+            'registration_closed_at' => $request->registration_closed_at,
 
             'registration_token' => $token,
 
@@ -162,7 +170,9 @@ class AttendantListController extends Controller
 
             'title' => 'required|string|max:255',
 
-            'activity_date' => 'required|date',
+            'start_date' => 'required|date',
+
+            'end_date' => 'required|date',
 
             'start_time' => 'required|date_format:H:i',
 
@@ -181,13 +191,17 @@ class AttendantListController extends Controller
 
             'max_participants' => 'nullable|integer|min:1',
 
+            'registration_closed_at' => 'nullable|date',
+
         ]);
 
         $attendantList->update([
 
             'title' => $request->title,
 
-            'activity_date' => $request->activity_date,
+            'start_date' => $request->start_date,
+
+            'end_date' => $request->end_date,
 
             'start_time' => $request->start_time,
 
@@ -198,6 +212,8 @@ class AttendantListController extends Controller
             'registration_enabled' => $request->boolean('registration_enabled'),
 
             'max_participants' => $request->max_participants,
+
+            'registration_closed_at' => $request->registration_closed_at,
 
         ]);
 
@@ -296,5 +312,63 @@ class AttendantListController extends Controller
             $mpdf->Output('Attendance-Template.pdf', 'D'),
             200
         )->header('Content-Type', 'application/pdf');
+    }
+
+    public function dsaParticipants(AttendantList $attendantList)
+    {
+
+        $registrations = $attendantList->registrations()
+            ->where('dsa', 'Need')
+            ->where('dsa_status', 'Approved')
+            ->orderBy('full_name')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+
+            'attendant_list' => [
+                'id' => $attendantList->id,
+                'title' => $attendantList->title,
+                'start_date' => $attendantList->start_date?->format('Y-m-d'),
+                'end_date' => $attendantList->end_date?->format('Y-m-d'),
+                'venue' => $attendantList->venue,
+            ],
+
+            'participants' => $registrations->map(function ($registration) {
+
+                return [
+                    'registration_id' => $registration->id,
+
+                    'name' => $registration->full_name ?? '',
+
+                    'organization' => $registration->institution ?? '',
+
+                    'position' => $registration->position ?? '',
+
+                    'gender' => $registration->gender ?? 'Male',
+
+                    'village' => $registration->village ?? '',
+
+                    'commune' => $registration->commune ?? '',
+
+                    'district' => $registration->district ?? '',
+
+                    'province' => collect([
+                        $registration->village,
+                        $registration->commune,
+                        $registration->district,
+                        $registration->province,
+                    ])
+                        ->filter(fn($value) => filled($value))
+                        ->implode(', '),
+
+                    'distance' => 0,
+
+                    'remarks' => $registration->remark ?? '',
+
+                    'costs' => [],
+                ];
+            })->values(),
+        ]);
     }
 }

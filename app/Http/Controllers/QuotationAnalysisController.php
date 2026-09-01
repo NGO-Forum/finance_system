@@ -656,6 +656,97 @@ class QuotationAnalysisController extends Controller
     }
 
 
+    public function templatePdf()
+    {
+
+        $html = view(
+            'quotation-analyses.template'
+        )->render();
+
+        // Remove non-breaking spaces
+        $html = str_replace("\xc2\xa0", ' ', $html);
+
+        try {
+
+            $mpdf = new Mpdf([
+                'mode' => 'utf-8',
+
+                // A4 Landscape
+                'format' => 'A4-L',
+
+                'margin_left' => 6,
+                'margin_right' => 6,
+                'margin_top' => 8,
+                'margin_bottom' => 6,
+
+                'margin_header' => 5,
+                'margin_footer' => 5,
+
+                'autoScriptToLang' => true,
+                'autoLangToFont' => true,
+
+                'tempDir' => storage_path('app/mpdf'),
+            ]);
+
+
+            $mpdf->SetTitle(
+                'Quotation Analysis Summary - FM02-10 Template'
+            );
+
+            $mpdf->SetAuthor(
+                config('app.name')
+            );
+
+            $mpdf->SetDisplayMode('fullpage');
+
+
+            $logo = public_path('images/logo.png');
+
+            if (file_exists($logo)) {
+
+                $mpdf->SetWatermarkImage(
+                    $logo,
+                    0.06,
+                    [150, 100],
+                    [70, 40]
+                );
+
+                $mpdf->showWatermarkImage = true;
+
+                $mpdf->watermarkImgBehind = true;
+            }
+
+
+            $mpdf->WriteHTML(
+                $html,
+                HTMLParserMode::DEFAULT_MODE
+            );
+
+
+            return response(
+                $mpdf->Output(
+                    'Quotation_Analysis_FM02-10_Template.pdf',
+                    Destination::STRING_RETURN
+                ),
+                200,
+                [
+                    'Content-Type' => 'application/pdf',
+
+                    'Content-Disposition' =>
+                    'inline; filename="Quotation_Analysis_FM02-10_Template.pdf"',
+                ]
+            );
+        } catch (\Throwable $e) {
+
+            return response()->json([
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
+            ], 500);
+        }
+    }
+
+
     /**
      * Generate QA Number
      */

@@ -91,6 +91,7 @@ class DsaClaimController extends Controller
             'purpose.*' => 'nullable|string',
             'departure_time.*' => 'nullable',
             'arrival_time.*' => 'nullable',
+            'km.*' => 'nullable|numeric|min:0',
 
             'expense_date.*' => 'nullable|date',
             'breakfast.*' => 'nullable|numeric|min:0',
@@ -158,6 +159,8 @@ class DsaClaimController extends Controller
                         'purpose' => $request->purpose[$key] ?? null,
 
                         'departure_time' => $request->departure_time[$key] ?? null,
+
+                        'km' => $request->km[$key] ?? null,
 
                         'arrival_time' => $request->arrival_time[$key] ?? null,
 
@@ -276,6 +279,7 @@ class DsaClaimController extends Controller
             'purpose.*' => 'nullable|string',
             'departure_time.*' => 'nullable',
             'arrival_time.*' => 'nullable',
+            'km.*' => 'nullable|numeric|min:0',
 
             'expense_date.*' => 'nullable|date',
             'breakfast.*' => 'nullable|numeric|min:0',
@@ -333,6 +337,8 @@ class DsaClaimController extends Controller
                         'to_location' => $request->to_location[$key] ?? null,
 
                         'purpose' => $request->purpose[$key] ?? null,
+
+                        'km' => $request->km[$key] ?? null,
 
                         'departure_time' => $request->departure_time[$key] ?? null,
 
@@ -482,7 +488,7 @@ class DsaClaimController extends Controller
 
                 $mpdf->SetWatermarkImage(
                     $logo,
-                    0.05,
+                    0.06,
                     [120, 100],
                     [45, 70]
                 );
@@ -504,6 +510,88 @@ class DsaClaimController extends Controller
                 [
                     'Content-Type' => 'application/pdf',
                     'Content-Disposition' => 'inline; filename="DSA_Claim_' . $dsaClaim->claim_no . '.pdf"',
+                ]
+            );
+        } catch (\Throwable $e) {
+
+            return response()->json([
+                'message' => $e->getMessage(),
+                'line'    => $e->getLine(),
+                'file'    => $e->getFile(),
+            ], 500);
+        }
+    }
+
+
+    public function templatePdf()
+    {
+        $html = view('dsa-claims.template')->render();
+
+        // Remove non-breaking spaces
+        $html = str_replace("\xc2\xa0", ' ', $html);
+
+        try {
+
+            $mpdf = new Mpdf([
+                'mode' => 'utf-8',
+                'format' => 'A4',
+
+                'margin_left'   => 6,
+                'margin_right'  => 6,
+                'margin_top'    => 6,
+                'margin_bottom' => 6,
+
+                'margin_header' => 3,
+                'margin_footer' => 3,
+
+                'autoScriptToLang' => true,
+                'autoLangToFont'   => true,
+
+                'tempDir' => storage_path('app/mpdf'),
+            ]);
+
+            $mpdf->SetTitle(
+                'DSA Claim Form - FM02-06'
+            );
+
+            $mpdf->SetAuthor(
+                config('app.name')
+            );
+
+            $mpdf->SetDisplayMode('fullpage');
+
+
+            $logo = public_path('images/logo.png');
+
+            if (file_exists($logo)) {
+
+                $mpdf->SetWatermarkImage(
+                    $logo,
+                    0.06,
+                    [120, 100],
+                    [45, 70]
+                );
+
+                $mpdf->showWatermarkImage = true;
+            }
+
+
+            $mpdf->WriteHTML(
+                $html,
+                HTMLParserMode::DEFAULT_MODE
+            );
+
+            return response(
+                $mpdf->Output(
+                    'DSA_Claim_FM02-06_Template.pdf',
+                    Destination::STRING_RETURN
+                ),
+                200,
+                [
+                    'Content-Type' => 'application/pdf',
+
+                    'Content-Disposition' =>
+                    'inline; filename="DSA_Claim_FM02-06_Template.pdf"',
                 ]
             );
         } catch (\Throwable $e) {

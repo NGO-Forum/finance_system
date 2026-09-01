@@ -218,9 +218,9 @@
                                 <a href="{{ route('dsa-claims.index') }}"
                                     class="flex items-center gap-3 px-5 py-2 transition
 
-                                {{ request()->routeIs('dsa-claims.*')
-                                    ? 'text-green-700 font-semibold bg-green-50'
-                                    : 'hover:text-green-700 text-gray-700' }}">
+                                    {{ request()->routeIs('dsa-claims.*')
+                                        ? 'text-green-700 font-semibold bg-green-50'
+                                        : 'hover:text-green-700 text-gray-700' }}">
 
                                     DSA Claim (FM02-06)
 
@@ -344,12 +344,21 @@
                     </div>
                 @elseif (!in_array(auth()->user()->role?->name, ['Admin', 'Finance']))
                     <!-- Logo -->
-                    <a href="{{ route('fund-requests.index') }}" class="group">
+                    <a href="{{ route('dashboard') }}" class="group">
 
                         <img src="{{ asset('images/logo.png') }}" alt="NGOF Logo"
                             class="h-16 w-auto object-contain transition duration-300 group-hover:scale-105">
 
                     </a>
+
+                    <a href="{{ route('dashboard') }}"
+                        class="px-4 py-2.5 rounded-xl transition text-lg
+                            {{ request()->routeIs('dashboard') ? ' text-green-700 font-semibold' : 'text-gray-700 hover:text-green-700' }}">
+
+                        Dashboard
+
+                    </a>
+
 
                     <!-- Finance Management -->
                     <div class="relative">
@@ -365,6 +374,7 @@
                                 'purchase-requests.*',
                                 'allowance-forms.*',
                                 'payment-slips.*',
+                                'dsa-claims.*',
                                 'verbal-quotes.*',
                                 'quotation-analyses.*',
                                 'purchase-orders.*',
@@ -389,6 +399,7 @@
                                     'payment-slips.*',
                                     'verbal-quotes.*',
                                     'quotation-analyses.*',
+                                    'dsa-claims.*',
                                     'purchase-orders.*',
                                     'goods-received-notes.*',
                                     'receipts.*',
@@ -455,6 +466,18 @@
                                     : 'hover:text-green-700 text-gray-700' }}">
 
                                 Attendant Lists (FM02-05)
+
+                            </a>
+
+                            {{-- DSA Claim --}}
+                            <a href="{{ route('dsa-claims.index') }}"
+                                class="flex items-center gap-3 px-5 py-2 transition
+
+                                    {{ request()->routeIs('dsa-claims.*')
+                                        ? 'text-green-700 font-semibold bg-green-50'
+                                        : 'hover:text-green-700 text-gray-700' }}">
+
+                                DSA Claim (FM02-06)
 
                             </a>
 

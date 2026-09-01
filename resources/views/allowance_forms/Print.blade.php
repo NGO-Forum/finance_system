@@ -25,7 +25,7 @@
             width: 50%;
             text-align: center;
             z-index: -1;
-            opacity: 0.05;
+            opacity: 0.06;
         }
 
         .watermark img {
@@ -183,7 +183,13 @@
         <img src="{{ asset('images/logo.png') }}">
     </div>
 
-    @foreach ($participants->chunk(4) as $chunkIndex => $participantGroup)
+    @php
+        $chunkedParticipants = $participants->chunk(4)->map(function ($chunk) {
+            return $chunk->values()->pad(4, null);
+        });
+    @endphp
+
+    @foreach ($chunkedParticipants as $chunkIndex => $participantGroup)
         <!-- Logos & Header -->
         <table class="header-table">
             <tr>
@@ -192,7 +198,7 @@
                 </td>
 
                 <td style="width: 55%; text-align: center;">
-                    <img src="{{ asset('images/exp.jpg') }}" style="height: 35px;">
+                    <img src="{{ asset('images/exp.jpg') }}" style="height: 40px;">
                 </td>
 
                 <td style="width: 25%; text-align: right;">
@@ -378,9 +384,12 @@
             </thead>
 
             <tbody>
-                @foreach ($participantGroup as $participant)
+                @foreach ($participantGroup as $participantIndex => $participant)
                     @php
-                        $costs = $participant->costs ?? [];
+                        $isEmptyParticipant = $participant === null;
+
+                        $costs = $isEmptyParticipant ? [] : $participant->costs ?? [];
+
                         $participantTotal = 0;
 
                         foreach ($costs as $day) {
@@ -410,38 +419,50 @@
 
                             @if ($loop->first)
                                 <td rowspan="6" class="text-center bold solid-border">
-                                    {{ $chunkIndex * 4 + $loop->parent->iteration }}
+                                    {{ $participantIndex + 1 }}
                                 </td>
 
                                 <td rowspan="6" class="text-left font-14 solid-border">
-                                    <strong>{{ $participant->name }}</strong>
-                                    @if ($participant->position)
-                                        <br>{{ $participant->position }}
-                                    @endif
-                                    @if ($participant->organization)
-                                        <br>{{ $participant->organization }}
+                                    @if ($participant)
+                                        <strong>{{ $participant->name }}</strong>
+                                        @if ($participant->position)
+                                            <br>{{ $participant->position }}
+                                        @endif
+                                        @if ($participant->organization)
+                                            <br>{{ $participant->organization }}
+                                        @endif
+                                    @else
+                                        &nbsp;
                                     @endif
                                 </td>
 
                                 <td rowspan="6" class="text-center solid-border">
-                                    {{ $participant->gender }}
+                                     @if ($participant)
+                                        {{ $participant->gender }}
+                                    @else
+                                        &nbsp;
+                                    @endif
                                 </td>
 
                                 <td rowspan="6" class="text-left font-14 solid-border">
-                                    <div style="font-weight:bold;">
-                                        {{ $participant->province ?: '-' }}
-                                    </div>
-
-                                    @if ($participant->distance)
-                                        <div style="margin-top:4px; color:#555;">
-                                            Distance: {{ number_format($participant->distance, 2) }} km
+                                    @if ($participant)
+                                        <div style="font-weight:bold;">
+                                            {{ $participant->province ?: '-' }}
                                         </div>
-                                    @endif
 
-                                    @if ($participant->remarks)
-                                        <div style="margin-top:4px; font-size:8px;">
-                                            {{ $participant->remarks }}
-                                        </div>
+                                        @if ($participant->distance)
+                                            <div style="margin-top:4px; color:#555;">
+                                                Distance: {{ number_format($participant->distance, 2) }} km
+                                            </div>
+                                        @endif
+
+                                        @if ($participant->remarks)
+                                            <div style="margin-top:4px;">
+                                                {{ $participant->remarks }}
+                                            </div>
+                                        @endif
+                                    @else
+                                        &nbsp;
                                     @endif
                                 </td>
                             @endif

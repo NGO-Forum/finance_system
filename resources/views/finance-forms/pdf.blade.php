@@ -24,6 +24,20 @@
             padding: 0;
         }
 
+        .watermark {
+            position: fixed;
+            top: 35%;
+            left: 25%;
+            width: 50%;
+            text-align: center;
+            z-index: -1;
+            opacity: 0.06;
+        }
+
+        .watermark img {
+            width: 500px;
+        }
+
         /* ===========================
            GLOBAL TABLE UTILITIES
            =========================== */
@@ -287,6 +301,10 @@
 </head>
 
 <body>
+
+    <div class="watermark">
+        <img src="{{ public_path('images/logo.png') }}">
+    </div>
 
     <!-- HEADER TABLE -->
     <table class="header-table">
@@ -804,7 +822,12 @@
 
                     $transactionType = $financeForm->transaction_type;
 
-                    $showRefund = in_array($transactionType, ['reimbursement', 'refund', 'cash_advance_settlement', 'cash_advance']);
+                    $showRefund = in_array($transactionType, [
+                        'reimbursement',
+                        'refund',
+                        'cash_advance_settlement',
+                        'cash_advance',
+                    ]);
 
                     $showIncome = $transactionType === 'income';
 
@@ -847,10 +870,14 @@
                         {{ number_format($displayAdvanceExpense, 2) }}
                     @endif
                 </td>
-                <td></td>
-                <td></td>
-                <td class="green-bg text-right fw-bold">{{ number_format($totalDebit, 2) }}</td>
-                <td class="green-bg text-right fw-bold">{{ number_format($totalCredit, 2) }}</td>
+                <td>{{ $item->account_code ?? '' }}</td>
+                <td>{{ $item->donor ?? '' }}</td>
+                <td class="green-bg text-right fw-bold"></td>
+                <td class="green-bg text-right fw-bold">
+                    @if ($transactionType === 'reimbursement')
+                        {{ number_format($totalDebit, 2) }}
+                    @endif
+                </td>
             </tr>
 
             <!-- ADVANCE AMOUNT REFERENCE ROW -->
@@ -894,13 +921,18 @@
 
                     </td>
                 @else
-
-                <td colspan="2" class="fw-bold text-center" style="font-size: 10px;"></td>
+                    <td colspan="2" class="fw-bold text-center" style="font-size: 10px;"></td>
 
                 @endif
 
                 <td class="green-bg text-right fw-bold">{{ number_format($totalDebit, 2) }}</td>
-                <td class="green-bg text-right fw-bold">{{ number_format($totalCredit, 2) }}</td>
+                <td class="green-bg text-right fw-bold">
+                    @if ($transactionType === 'reimbursement')
+                        {{ number_format($totalDebit, 2) }}
+                    @else
+                        {{ number_format($totalCredit, 2) }}
+                    @endif
+                </td>
             </tr>
 
             <!-- POSTED BY ROW -->
@@ -922,16 +954,16 @@
         </tr>
         <tr>
             <td class="signature-space">
-                
+
             </td>
             <td class="signature-space">
-               
+
             </td>
             <td class="signature-space">
-                
+
             </td>
             <td class="signature-space">
-                
+
             </td>
         </tr>
         <tr>

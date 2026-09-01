@@ -36,12 +36,56 @@
                 <!-- Section 1: Top Metadata Grid -->
                 <div
                     class="grid grid-cols-1 md:grid-cols-6 gap-4 bg-slate-50 p-5 rounded-xl border border-slate-200/80 mb-6 text-sm shadow-xs">
-                    <div class="col-span-5">
-                        <label class="block font-bold text-slate-600 mb-2 tracking-wide uppercase text-sm">For Activity
-                            <span class="text-red-500">*</span></label>
-                        <input type="text" name="activity" value="{{ old('activity') }}"
-                            class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 transition focus:border-green-700 focus:ring-1 focus:ring-green-700 text-slate-800 shadow-xs"
-                            placeholder="Activity description..." required>
+
+                    <div class="col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Attendant List
+                        </label>
+
+                        <select name="attendant_list_id" id="attendant_list_id"
+                            class="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500">
+
+                            <option value="">
+                                Select Attendant List
+                            </option>
+
+                            @foreach ($attendantLists as $attendantList)
+                                <option value="{{ $attendantList->id }}" data-activity="{{ $attendantList->title }}"
+                                    data-start-date="{{ $attendantList->start_date?->format('Y-m-d') }}"
+                                    data-end-date="{{ $attendantList->end_date?->format('Y-m-d') }}"
+                                    data-venue="{{ $attendantList->venue }}"
+                                    {{ old('attendant_list_id') == $attendantList->id ? 'selected' : '' }}>
+                                    {{ $attendantList->title }}
+                                </option>
+                            @endforeach
+
+                        </select>
+
+                        @error('attendant_list_id')
+                            <p class="mt-1 text-sm text-red-600">
+                                {{ $message }}
+                            </p>
+                        @enderror
+                    </div>
+                    <div class="col-span-3">
+
+                        <label for="activity" class="block font-bold text-slate-600 mb-2 tracking-wide uppercase text-sm">
+                            For Activity
+                            <span class="text-red-500">*</span>
+                        </label>
+
+                        <input type="text" name="activity" id="activity" value="{{ old('activity') }}"
+                            class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2
+                                transition focus:border-green-700 focus:ring-1 focus:ring-green-700
+                                text-slate-800 shadow-xs"
+                            placeholder="Select an Attendant List or enter another activity..." required>
+
+                        @error('activity')
+                            <p class="mt-1 text-sm text-red-600">
+                                {{ $message }}
+                            </p>
+                        @enderror
+
                     </div>
                     <div>
                         <label class="block font-bold text-slate-600 mb-2 tracking-wide uppercase text-sm">
@@ -102,6 +146,7 @@
                             class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 transition focus:border-green-700 focus:ring-1 focus:ring-green-700 text-slate-800 shadow-xs"
                             placeholder="Donor code entity...">
                     </div>
+
                     <div>
                         <label for="start_date" class="block mb-2 text-sm font-bold uppercase tracking-wide text-slate-600">
                             Start Date <span class="text-red-500">*</span>
@@ -144,7 +189,7 @@
 
                         <div class="p-4">
 
-                            <div class="flex items-center gap-12 flex-wrap">
+                            <div class="flex items-center gap-4 flex-wrap">
 
                                 @foreach ($donorLogos as $donor)
                                     <label
@@ -171,12 +216,6 @@
                 <!-- Dynamic Controls Header -->
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-lg font-bold text-green-700 tracking-tight">Participant Matrix Records</h2>
-                    <div class="flex gap-2">
-                        <button type="button" @click="addParticipant"
-                            class="bg-green-600 text-white hover:bg-green-700 px-3 py-1.5 text-sm font-semibold rounded-lg shadow-xs flex items-center gap-1 transition">
-                            <span class="text-white font-bold">+</span> Add Participant
-                        </button>
-                    </div>
                 </div>
 
                 <!-- Section 2: Matrix Table Grid -->
@@ -375,6 +414,13 @@
                     </table>
                 </div>
 
+                <div class="flex justify-end mt-4">
+                    <button type="button" @click="addParticipant"
+                        class="bg-green-600 text-white hover:bg-green-700 px-3 py-1.5 text-sm font-semibold rounded-lg shadow-xs flex items-center gap-1 transition">
+                        <span class="text-white font-bold">+</span> Add Participant
+                    </button>
+                </div>
+
                 <!-- Bottom Summary Aggregations Display -->
                 <div class="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-5 items-stretch">
                     <div class="lg:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -451,33 +497,772 @@
 
     <!-- Alpine.js Matrix Control Handler -->
     <script>
+        // function allowanceMatrix() {
+
+        //     const startDateInput = document.getElementById('start_date');
+        //     const endDateInput = document.getElementById('end_date');
+
+        //     return {
+
+        //         dates: @json(old('dates', [])),
+        //         participants: [],
+
+        //         init() {
+
+        //             this.generateDates();
+
+        //             if (this.participants.length === 0) {
+        //                 this.addParticipant();
+        //             }
+
+        //             startDateInput.addEventListener('change', () => {
+        //                 this.generateDates();
+        //             });
+
+        //             endDateInput.addEventListener('change', () => {
+        //                 this.generateDates();
+        //             });
+
+        //         },
+
+        //         generateDates() {
+
+        //             this.dates = [];
+
+        //             if (!startDateInput.value || !endDateInput.value) {
+        //                 return;
+        //             }
+
+        //             let current = new Date(startDateInput.value);
+        //             const end = new Date(endDateInput.value);
+
+        //             while (current <= end) {
+        //                 this.dates.push(current.toISOString().split('T')[0]);
+        //                 current.setDate(current.getDate() + 1);
+        //             }
+
+        //             this.participants.forEach(p => {
+
+        //                 while (p.costs.length < this.dates.length) {
+        //                     p.costs.push(this.emptyCost());
+        //                 }
+
+        //                 while (p.costs.length > this.dates.length) {
+        //                     p.costs.pop();
+        //                 }
+
+        //             });
+
+        //         },
+
+        //         emptyCost() {
+        //             return {
+        //                 breakfast: 0,
+        //                 lunch: 0,
+        //                 dinner: 0,
+        //                 accommodation: 0,
+        //                 taxi: 0,
+        //                 local_transport: 0
+        //             };
+        //         },
+
+        //         addParticipant() {
+
+        //             const costs = [];
+
+        //             this.dates.forEach(() => {
+        //                 costs.push(this.emptyCost());
+        //             });
+
+        //             this.participants.push({
+        //                 name: '',
+        //                 organization: '',
+        //                 position: '',
+        //                 gender: 'M',
+        //                 province: '',
+        //                 distance: 0,
+        //                 remarks: '',
+        //                 costs
+        //             });
+
+        //         },
+
+        //         removeParticipant(index) {
+
+        //             if (this.participants.length <= 1) {
+        //                 alert('At least one participant is required.');
+        //                 return;
+        //             }
+
+        //             this.participants.splice(index, 1);
+
+        //         },
+
+        //         sumCategory(p, category) {
+        //             return p.costs.reduce((sum, day) => sum + (+day[category] || 0), 0);
+        //         },
+
+        //         calculateParticipantTotal(p) {
+
+        //             return [
+        //                 'breakfast',
+        //                 'lunch',
+        //                 'dinner',
+        //                 'accommodation',
+        //                 'taxi',
+        //                 'local_transport'
+        //             ].reduce((sum, type) => {
+        //                 return sum + this.sumCategory(p, type);
+        //             }, 0);
+
+        //         },
+
+        //         grandCategoryTotal(category) {
+        //             return this.participants.reduce((sum, p) => {
+        //                 return sum + this.sumCategory(p, category);
+        //             }, 0);
+        //         },
+
+        //         grandFoodTotal() {
+        //             return this.grandCategoryTotal('breakfast') +
+        //                 this.grandCategoryTotal('lunch') +
+        //                 this.grandCategoryTotal('dinner');
+        //         },
+
+        //         grandFormTotal() {
+        //             return this.participants.reduce((sum, p) => {
+        //                 return sum + this.calculateParticipantTotal(p);
+        //             }, 0);
+        //         },
+
+        //         formatDate(date) {
+        //             return new Date(date).toLocaleDateString('en-GB', {
+        //                 day: '2-digit',
+        //                 month: '2-digit'
+        //             });
+        //         },
+
+
+        //         distanceRate(distance) {
+        //             distance = Number(distance) || 0;
+
+        //             if (distance >= 1 && distance <= 2) return 2;
+        //             if (distance >= 3 && distance <= 5) return 3;
+        //             if (distance >= 6 && distance <= 10) return 6;
+        //             if (distance >= 11 && distance <= 15) return 8;
+        //             if (distance >= 16 && distance <= 40) return 12;
+        //             if (distance >= 41 && distance <= 50) return 16;
+        //             if (distance >= 51 && distance <= 70) return 20;
+        //             if (distance >= 71 && distance <= 100) return 24;
+        //             if (distance >= 101 && distance <= 200) return 26;
+        //             if (distance >= 201 && distance <= 300) return 28;
+        //             if (distance > 300) return 32;
+
+        //             return 0;
+        //         },
+
+        //         updateDistanceRate(participant) {
+
+        //             const rate = this.distanceRate(participant.distance);
+
+        //             // Reset all days
+        //             participant.costs.forEach(day => {
+        //                 day.taxi = 0;
+        //             });
+
+        //             if (participant.costs.length === 0) return;
+
+        //             // First day (departure)
+        //             participant.costs[0].taxi = rate / 2;
+
+        //             // Last day (return)
+        //             if (participant.costs.length > 1) {
+        //                 participant.costs[participant.costs.length - 1].taxi = rate / 2;
+        //             } else {
+        //                 // Only one-day activity
+        //                 participant.costs[0].taxi = rate;
+        //             }
+        //         }
+
+        //     }
+
+        // }
+
         function allowanceMatrix() {
 
-            const startDateInput = document.getElementById('start_date');
-            const endDateInput = document.getElementById('end_date');
+            const startDateInput =
+                document.getElementById('start_date');
+
+            const endDateInput =
+                document.getElementById('end_date');
+
+            const attendantListSelect =
+                document.getElementById('attendant_list_id');
+
+            const activityInput =
+                document.getElementById('activity');
+
+            const venueInput =
+                document.querySelector('[name="venue"]');
+
+            const loadingMessage =
+                document.getElementById('dsa-loading');
+
+            const dsaMessage =
+                document.getElementById('dsa-message');
+
 
             return {
 
                 dates: @json(old('dates', [])),
+
                 participants: [],
 
-                init() {
+
+                /*
+                |--------------------------------------------------------------------------
+                | Initialization
+                |--------------------------------------------------------------------------
+                */
+
+                async init() {
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Date listeners
+                    |--------------------------------------------------------------------------
+                    */
+
+                    if (startDateInput) {
+
+                        startDateInput.addEventListener('change', () => {
+                            this.generateDates();
+                        });
+
+                    }
+
+                    if (endDateInput) {
+
+                        endDateInput.addEventListener('change', () => {
+                            this.generateDates();
+                        });
+
+                    }
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Attendant List listener
+                    |--------------------------------------------------------------------------
+                    */
+
+                    if (attendantListSelect) {
+
+                        attendantListSelect.addEventListener(
+                            'change',
+                            () => {
+                                this.attendantListChanged();
+                            }
+                        );
+
+                    }
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Existing validation data
+                    |--------------------------------------------------------------------------
+                    */
+
+                    const oldParticipants =
+                        @json(old('participants', []));
+
+                    if (
+                        Array.isArray(oldParticipants) &&
+                        oldParticipants.length > 0
+                    ) {
+
+                        this.participants =
+                            oldParticipants.map(participant => {
+
+                                return this.normalizeParticipant(
+                                    participant
+                                );
+
+                            });
+
+                    } else {
+
+                        /*
+                        |--------------------------------------------------------------------------
+                        | If an Attendant List was already selected
+                        |--------------------------------------------------------------------------
+                        */
+
+                        if (
+                            attendantListSelect &&
+                            attendantListSelect.value
+                        ) {
+
+                            await this.loadDSAParticipants();
+
+                        }
+
+                    }
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Generate dates
+                    |--------------------------------------------------------------------------
+                    */
 
                     this.generateDates();
 
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Only create blank participant when no data exists
+                    |--------------------------------------------------------------------------
+                    */
+
                     if (this.participants.length === 0) {
+
                         this.addParticipant();
+
                     }
 
-                    startDateInput.addEventListener('change', () => {
-                        this.generateDates();
-                    });
+                },
 
-                    endDateInput.addEventListener('change', () => {
-                        this.generateDates();
-                    });
+
+                /*
+                |--------------------------------------------------------------------------
+                | Attendant List Changed
+                |--------------------------------------------------------------------------
+                */
+
+                async attendantListChanged() {
+
+                    const selectedOption =
+                        attendantListSelect.options[
+                            attendantListSelect.selectedIndex
+                        ];
+
+
+                    if (
+                        !selectedOption ||
+                        !selectedOption.value
+                    ) {
+
+                        return;
+
+                    }
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Activity
+                    |--------------------------------------------------------------------------
+                    */
+
+                    const activity =
+                        selectedOption.dataset.activity || '';
+
+                    if (
+                        activityInput &&
+                        !activityInput.value
+                    ) {
+
+                        activityInput.value = activity;
+
+                    }
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Venue
+                    |--------------------------------------------------------------------------
+                    */
+
+                    const venue =
+                        selectedOption.dataset.venue || '';
+
+                    if (
+                        venueInput &&
+                        !venueInput.value
+                    ) {
+
+                        venueInput.value = venue;
+
+                    }
+
+
+                    const startDate =
+                        selectedOption.dataset.startDate || '';
+
+                    if (
+                        startDateInput &&
+                        startDate
+                    ) {
+
+                        startDateInput.value =
+                            startDate;
+
+                    }
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | End Date
+                    |--------------------------------------------------------------------------
+                    */
+
+                    const endDate =
+                        selectedOption.dataset.endDate || '';
+
+                    if (
+                        endDateInput &&
+                        endDate
+                    ) {
+
+                        endDateInput.value =
+                            endDate;
+
+                    }
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Regenerate Matrix
+                    |--------------------------------------------------------------------------
+                    */
+
+                    this.generateDates();
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Load DSA participants
+                    |--------------------------------------------------------------------------
+                    */
+
+                    await this.loadDSAParticipants();
 
                 },
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Load registrations where DSA = Need
+                |--------------------------------------------------------------------------
+                */
+
+                async loadDSAParticipants() {
+
+                    const attendantListId =
+                        attendantListSelect.value;
+
+
+                    if (!attendantListId) {
+                        return;
+                    }
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Loading
+                    |--------------------------------------------------------------------------
+                    */
+
+                    if (loadingMessage) {
+
+                        loadingMessage.classList.remove(
+                            'hidden'
+                        );
+
+                    }
+
+                    if (dsaMessage) {
+
+                        dsaMessage.classList.add(
+                            'hidden'
+                        );
+
+                    }
+
+
+                    try {
+
+                        const response = await fetch(
+                            `/attendant-lists/${attendantListId}/dsa-participants`, {
+                                headers: {
+                                    'Accept': 'application/json',
+                                    'X-Requested-With': 'XMLHttpRequest'
+                                }
+                            }
+                        );
+
+
+                        if (!response.ok) {
+
+                            throw new Error(
+                                'Unable to load DSA participants.'
+                            );
+
+                        }
+
+
+                        const data =
+                            await response.json();
+
+
+                        /*
+                        |--------------------------------------------------------------------------
+                        | Clear current participants
+                        |--------------------------------------------------------------------------
+                        */
+
+                        this.participants = [];
+
+
+                        /*
+                        |--------------------------------------------------------------------------
+                        | Add real registrations
+                        |--------------------------------------------------------------------------
+                        */
+
+                        if (
+                            data.participants &&
+                            data.participants.length > 0
+                        ) {
+
+                            data.participants.forEach(
+                                participant => {
+
+                                    this.participants.push(
+                                        this.normalizeParticipant(
+                                            participant
+                                        )
+                                    );
+
+                                }
+                            );
+
+
+                            if (dsaMessage) {
+
+                                dsaMessage.textContent =
+                                    `${data.participants.length} DSA participant(s) loaded from registration.`;
+
+                                dsaMessage.className =
+                                    'mt-2 text-sm text-green-600';
+
+                            }
+
+                        } else {
+
+                            /*
+                            |--------------------------------------------------------------------------
+                            | No DSA participants
+                            |--------------------------------------------------------------------------
+                            */
+
+                            if (dsaMessage) {
+
+                                dsaMessage.textContent =
+                                    'No registered participants with DSA = Need were found. You can add participants manually.';
+
+                                dsaMessage.className =
+                                    'mt-2 text-sm text-amber-600';
+
+                            }
+
+                            /*
+                            |--------------------------------------------------------------------------
+                            | Add one blank row
+                            |--------------------------------------------------------------------------
+                            */
+
+                            this.addParticipant();
+
+                        }
+
+
+                        /*
+                        |--------------------------------------------------------------------------
+                        | Generate dates
+                        |--------------------------------------------------------------------------
+                        */
+
+                        this.generateDates();
+
+
+                    } catch (error) {
+
+                        console.error(error);
+
+
+                        if (dsaMessage) {
+
+                            dsaMessage.textContent =
+                                'Unable to load registered participants. You can add participants manually.';
+
+                            dsaMessage.className =
+                                'mt-2 text-sm text-red-600';
+
+                        }
+
+                    } finally {
+
+                        if (loadingMessage) {
+
+                            loadingMessage.classList.add(
+                                'hidden'
+                            );
+
+                        }
+
+                    }
+
+                },
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Normalize participant
+                |--------------------------------------------------------------------------
+                */
+
+                normalizeParticipant(participant) {
+
+                    const costs = [];
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Existing costs
+                    |--------------------------------------------------------------------------
+                    */
+
+                    if (
+                        Array.isArray(participant.costs)
+                    ) {
+
+                        participant.costs.forEach(cost => {
+
+                            costs.push({
+
+                                breakfast: Number(cost.breakfast) || 0,
+
+                                lunch: Number(cost.lunch) || 0,
+
+                                dinner: Number(cost.dinner) || 0,
+
+                                accommodation: Number(cost.accommodation) || 0,
+
+                                taxi: Number(cost.taxi) || 0,
+
+                                local_transport: Number(cost.local_transport) || 0
+
+                            });
+
+                        });
+
+                    }
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Make sure cost count matches dates
+                    |--------------------------------------------------------------------------
+                    */
+
+                    while (
+                        costs.length < this.dates.length
+                    ) {
+
+                        costs.push(
+                            this.emptyCost()
+                        );
+
+                    }
+
+
+                    while (
+                        costs.length > this.dates.length
+                    ) {
+
+                        costs.pop();
+
+                    }
+
+
+                    return {
+
+                        registration_id: participant.registration_id ?? null,
+
+                        name: participant.name ?? '',
+
+                        organization: participant.organization ?? '',
+
+                        position: participant.position ?? '',
+
+                        gender: this.normalizeGender(
+                            participant.gender
+                        ),
+
+                        province: participant.province ?? '',
+
+                        distance: Number(
+                            participant.distance
+                        ) || 0,
+
+                        remarks: participant.remarks ?? '',
+
+                        costs
+
+                    };
+
+                },
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Gender conversion
+                |--------------------------------------------------------------------------
+                */
+
+                normalizeGender(gender) {
+
+                    if (!gender) {
+                        return 'M';
+                    }
+
+
+                    const value =
+                        String(gender).toLowerCase();
+
+
+                    if (
+                        value === 'female' ||
+                        value === 'f'
+                    ) {
+
+                        return 'F';
+
+                    }
+
+
+                    return 'M';
+
+                },
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Generate dates
+                |--------------------------------------------------------------------------
+                */
 
                 generateDates() {
 
@@ -487,159 +1272,564 @@
                         return;
                     }
 
-                    let current = new Date(startDateInput.value);
-                    const end = new Date(endDateInput.value);
+                    let current = new Date(
+                        startDateInput.value + 'T00:00:00'
+                    );
+
+                    const end = new Date(
+                        endDateInput.value + 'T00:00:00'
+                    );
 
                     while (current <= end) {
-                        this.dates.push(current.toISOString().split('T')[0]);
-                        current.setDate(current.getDate() + 1);
+
+                        const year = current.getFullYear();
+
+                        const month = String(
+                            current.getMonth() + 1
+                        ).padStart(2, '0');
+
+                        const day = String(
+                            current.getDate()
+                        ).padStart(2, '0');
+
+                        this.dates.push(
+                            `${year}-${month}-${day}`
+                        );
+
+                        current.setDate(
+                            current.getDate() + 1
+                        );
                     }
 
                     this.participants.forEach(p => {
 
-                        while (p.costs.length < this.dates.length) {
-                            p.costs.push(this.emptyCost());
+                        while (
+                            p.costs.length < this.dates.length
+                        ) {
+                            p.costs.push(
+                                this.emptyCost()
+                            );
                         }
 
-                        while (p.costs.length > this.dates.length) {
+                        while (
+                            p.costs.length > this.dates.length
+                        ) {
                             p.costs.pop();
                         }
 
                     });
-
                 },
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Empty cost
+                |--------------------------------------------------------------------------
+                */
 
                 emptyCost() {
+
                     return {
+
                         breakfast: 0,
+
                         lunch: 0,
+
                         dinner: 0,
+
                         accommodation: 0,
+
                         taxi: 0,
+
                         local_transport: 0
+
                     };
+
                 },
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Add manual participant
+                |--------------------------------------------------------------------------
+                */
 
                 addParticipant() {
 
                     const costs = [];
 
+
                     this.dates.forEach(() => {
-                        costs.push(this.emptyCost());
+
+                        costs.push(
+                            this.emptyCost()
+                        );
+
                     });
 
+
                     this.participants.push({
+
+                        registration_id: null,
+
                         name: '',
+
                         organization: '',
+
                         position: '',
-                        gender: 'M',
+
+                        gender: '',
+
                         province: '',
+
                         distance: 0,
+
                         remarks: '',
+
                         costs
+
                     });
 
                 },
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Remove participant
+                |--------------------------------------------------------------------------
+                */
 
                 removeParticipant(index) {
 
-                    if (this.participants.length <= 1) {
-                        alert('At least one participant is required.');
+                    if (
+                        this.participants.length <= 1
+                    ) {
+
+                        alert(
+                            'At least one participant is required.'
+                        );
+
                         return;
+
                     }
 
-                    this.participants.splice(index, 1);
+
+                    this.participants.splice(
+                        index,
+                        1
+                    );
 
                 },
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Category total
+                |--------------------------------------------------------------------------
+                */
 
                 sumCategory(p, category) {
-                    return p.costs.reduce((sum, day) => sum + (+day[category] || 0), 0);
+
+                    return p.costs.reduce(
+                        (sum, day) => {
+
+                            return sum +
+                                (
+                                    Number(
+                                        day[category]
+                                    ) || 0
+                                );
+
+                        },
+                        0
+                    );
+
                 },
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Participant total
+                |--------------------------------------------------------------------------
+                */
 
                 calculateParticipantTotal(p) {
 
                     return [
+
                         'breakfast',
+
                         'lunch',
+
                         'dinner',
+
                         'accommodation',
+
                         'taxi',
+
                         'local_transport'
-                    ].reduce((sum, type) => {
-                        return sum + this.sumCategory(p, type);
-                    }, 0);
+
+                    ].reduce(
+                        (sum, type) => {
+
+                            return sum +
+                                this.sumCategory(
+                                    p,
+                                    type
+                                );
+
+                        },
+                        0
+                    );
 
                 },
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Grand category
+                |--------------------------------------------------------------------------
+                */
 
                 grandCategoryTotal(category) {
-                    return this.participants.reduce((sum, p) => {
-                        return sum + this.sumCategory(p, category);
-                    }, 0);
+
+                    return this.participants.reduce(
+                        (sum, p) => {
+
+                            return sum +
+                                this.sumCategory(
+                                    p,
+                                    category
+                                );
+
+                        },
+                        0
+                    );
+
                 },
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Food total
+                |--------------------------------------------------------------------------
+                */
 
                 grandFoodTotal() {
-                    return this.grandCategoryTotal('breakfast') +
-                        this.grandCategoryTotal('lunch') +
-                        this.grandCategoryTotal('dinner');
+
+                    return (
+
+                        this.grandCategoryTotal(
+                            'breakfast'
+                        )
+
+                        +
+
+                        this.grandCategoryTotal(
+                            'lunch'
+                        )
+
+                        +
+
+                        this.grandCategoryTotal(
+                            'dinner'
+                        )
+
+                    );
+
                 },
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Grand form total
+                |--------------------------------------------------------------------------
+                */
 
                 grandFormTotal() {
-                    return this.participants.reduce((sum, p) => {
-                        return sum + this.calculateParticipantTotal(p);
-                    }, 0);
+
+                    return this.participants.reduce(
+                        (sum, p) => {
+
+                            return sum +
+                                this.calculateParticipantTotal(
+                                    p
+                                );
+
+                        },
+                        0
+                    );
+
                 },
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Format date
+                |--------------------------------------------------------------------------
+                */
 
                 formatDate(date) {
-                    return new Date(date).toLocaleDateString('en-GB', {
-                        day: '2-digit',
-                        month: '2-digit'
-                    });
+
+                    const [year, month, day] =
+                    date.split('-');
+
+                    return `${day}/${month}`;
                 },
 
+
+                /*
+                |--------------------------------------------------------------------------
+                | Distance rate
+                |--------------------------------------------------------------------------
+                */
 
                 distanceRate(distance) {
-                    distance = Number(distance) || 0;
 
-                    if (distance >= 1 && distance <= 2) return 2;
-                    if (distance >= 3 && distance <= 5) return 3;
-                    if (distance >= 6 && distance <= 10) return 6;
-                    if (distance >= 11 && distance <= 15) return 8;
-                    if (distance >= 16 && distance <= 40) return 12;
-                    if (distance >= 41 && distance <= 50) return 16;
-                    if (distance >= 51 && distance <= 70) return 20;
-                    if (distance >= 71 && distance <= 100) return 24;
-                    if (distance >= 101 && distance <= 200) return 26;
-                    if (distance >= 201 && distance <= 300) return 28;
-                    if (distance > 300) return 32;
+                    distance =
+                        Number(distance) || 0;
+
+
+                    if (
+                        distance >= 1 &&
+                        distance <= 2
+                    ) return 2;
+
+
+                    if (
+                        distance >= 3 &&
+                        distance <= 5
+                    ) return 3;
+
+
+                    if (
+                        distance >= 6 &&
+                        distance <= 10
+                    ) return 6;
+
+
+                    if (
+                        distance >= 11 &&
+                        distance <= 15
+                    ) return 8;
+
+
+                    if (
+                        distance >= 16 &&
+                        distance <= 40
+                    ) return 12;
+
+
+                    if (
+                        distance >= 41 &&
+                        distance <= 50
+                    ) return 16;
+
+
+                    if (
+                        distance >= 51 &&
+                        distance <= 70
+                    ) return 20;
+
+
+                    if (
+                        distance >= 71 &&
+                        distance <= 100
+                    ) return 24;
+
+
+                    if (
+                        distance >= 101 &&
+                        distance <= 200
+                    ) return 26;
+
+
+                    if (
+                        distance >= 201 &&
+                        distance <= 300
+                    ) return 28;
+
+
+                    if (distance > 300) {
+                        return 32;
+                    }
+
 
                     return 0;
+
                 },
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Update taxi rate
+                |--------------------------------------------------------------------------
+                */
 
                 updateDistanceRate(participant) {
 
-                    const rate = this.distanceRate(participant.distance);
+                    const rate =
+                        this.distanceRate(
+                            participant.distance
+                        );
 
-                    // Reset all days
+
                     participant.costs.forEach(day => {
+
                         day.taxi = 0;
+
                     });
 
-                    if (participant.costs.length === 0) return;
 
-                    // First day (departure)
-                    participant.costs[0].taxi = rate / 2;
+                    if (
+                        participant.costs.length === 0
+                    ) {
 
-                    // Last day (return)
-                    if (participant.costs.length > 1) {
-                        participant.costs[participant.costs.length - 1].taxi = rate / 2;
-                    } else {
-                        // Only one-day activity
-                        participant.costs[0].taxi = rate;
+                        return;
+
                     }
+
+
+                    participant.costs[0].taxi =
+                        rate / 2;
+
+
+                    if (
+                        participant.costs.length > 1
+                    ) {
+
+                        participant.costs[
+                                participant.costs.length - 1
+                            ].taxi =
+                            rate / 2;
+
+                    } else {
+
+                        participant.costs[0].taxi =
+                            rate;
+
+                    }
+
                 }
+
+            };
+
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+
+            const attendantListSelect =
+                document.getElementById('attendant_list_id');
+
+            const activityInput =
+                document.getElementById('activity');
+
+            const startDateInput =
+                document.getElementById('start_date');
+
+            const endDateInput =
+                document.getElementById('end_date');
+
+            const venueInput =
+                document.querySelector('[name="venue"]');
+
+
+            if (!attendantListSelect) {
+                return;
+            }
+
+
+            attendantListSelect.addEventListener('change', function() {
+
+                const selectedOption =
+                    this.options[this.selectedIndex];
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | No Attendant List selected
+                |--------------------------------------------------------------------------
+                */
+
+                if (!selectedOption || !selectedOption.value) {
+
+                    return;
+                }
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Activity
+                |--------------------------------------------------------------------------
+                */
+
+                const activity =
+                    selectedOption.dataset.activity || '';
+
+                if (activityInput && activity) {
+
+                    activityInput.value = activity;
+
+                }
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Activity Date
+                |--------------------------------------------------------------------------
+                */
+
+                const activityDate =
+                    selectedOption.dataset.date || '';
+
+
+                if (activityDate) {
+
+                    // Start Date
+                    if (startDateInput) {
+                        startDateInput.value = activityDate;
+                    }
+
+                    // End Date
+                    if (endDateInput) {
+                        endDateInput.value = activityDate;
+                    }
+
+                }
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Venue
+                |--------------------------------------------------------------------------
+                */
+
+                const venue =
+                    selectedOption.dataset.venue || '';
+
+                if (venueInput && venue) {
+
+                    venueInput.value = venue;
+
+                }
+
+            });
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Automatically load selected Attendant List after validation error
+            |--------------------------------------------------------------------------
+            */
+
+            if (attendantListSelect.value) {
+
+                attendantListSelect.dispatchEvent(
+                    new Event('change')
+                );
 
             }
 
-        }
+        });
     </script>
 @endsection

@@ -958,4 +958,107 @@ class GoodsReceivedNoteController extends Controller
             ], 500);
         }
     }
+
+
+    public function template()
+    {
+        $start = microtime(true);
+
+        try {
+            $tempDir = storage_path('app/mpdf');
+
+            if (!is_dir($tempDir)) {
+                mkdir($tempDir, 0755, true);
+            }
+
+            $mpdf = new Mpdf([
+                'mode' => 'utf-8',
+                'format' => 'A4',
+                'orientation' => 'P',
+
+                'margin_left' => 6,
+                'margin_right' => 6,
+                'margin_top' => 5,
+                'margin_bottom' => 6,
+
+                'margin_header' => 0,
+                'margin_footer' => 0,
+
+                'autoScriptToLang' => true,
+                'autoLangToFont' => true,
+
+                'tempDir' => $tempDir,
+            ]);
+
+            $mpdf->SetTitle(
+                'Goods Received Note Template'
+            );
+
+            $mpdf->SetAuthor(
+                'NGO Forum on Cambodia'
+            );
+
+
+            $logo = public_path('images/logo.png');
+
+            if (file_exists($logo)) {
+                $mpdf->SetWatermarkImage(
+                    $logo,
+                    0.06,
+                    [140, 100],
+                    [35, 80]
+                );
+
+                $mpdf->showWatermarkImage = true;
+                $mpdf->watermarkImgBehind = true;
+            }
+
+            $html = view(
+                'goods_received_notes.template'
+            )->render();
+
+            $html = str_replace(
+                "\xc2\xa0",
+                ' ',
+                $html
+            );
+
+            $mpdf->WriteHTML($html);
+
+            $filename = 'Goods_Received_Note_Template.pdf';
+
+            $pdf = $mpdf->Output(
+                $filename,
+                Destination::STRING_RETURN
+            );
+
+            return response(
+                $pdf,
+                200,
+                [
+                    'Content-Type' => 'application/pdf',
+                    'Content-Disposition' =>
+                    'inline; filename="' .
+                        $filename .
+                        '"',
+                ]
+            );
+        } catch (\Throwable $e) {
+
+            Log::error(
+                'Goods Received Note Template PDF Error',
+                [
+                    'message' => $e->getMessage(),
+                    'line' => $e->getLine(),
+                    'file' => $e->getFile(),
+                ]
+            );
+
+            return response()->json([
+                'message' =>
+                'Unable to generate Goods Received Note template.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
 }

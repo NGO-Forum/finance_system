@@ -24,6 +24,8 @@ return new class extends Migration
 
             $table->text('purpose');
 
+            $table->decimal('km', 10, 2)->nullable();
+
             $table->time('departure_time')->nullable();
 
             $table->time('arrival_time')->nullable();

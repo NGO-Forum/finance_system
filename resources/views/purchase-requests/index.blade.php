@@ -49,7 +49,14 @@
                 </div>
 
                 {{-- Right --}}
-                <div class="flex flex-wrap gap-3">
+                <div class="flex flex-wrap gap-6">
+
+                    <a href="{{ route('purchase-requests.template.pdf') }}" target="_blank"
+                        class="inline-flex items-center gap-2 px-4 py-2
+                        bg-red-600 hover:bg-red-700
+                        text-white rounded-lg">
+                        PDF Template
+                    </a>
 
                     <a href="{{ route('purchase-requests.create') }}"
                         class="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-green-700 font-semibold shadow-lg transition hover:scale-105 hover:bg-green-50">
@@ -226,7 +233,7 @@
                                 Total Request
                             </th>
 
-                            <th class="px-4 py-3 text-center text-xs font-bold uppercase">
+                            <th class="px-4 py-3 text-left text-xs font-bold uppercase">
                                 Prepared By
                             </th>
 
@@ -264,7 +271,7 @@
                                 <td class="px-4 py-2 text-right font-semibold">
                                     ${{ number_format($purchase->grand_total, 2) }}
                                 </td>
-                                <td class="px-4 py-2 text-center">
+                                <td class="px-4 py-2 text-left">
                                     {{ $purchase->preparer?->name }}
                                 </td>
 

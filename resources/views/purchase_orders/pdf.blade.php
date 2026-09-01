@@ -207,12 +207,33 @@
         </table>
 
         @php
-            $subtotal = $purchaseOrder->items->sum('total');
-            $taxPercent = (float) ($purchaseOrder->tax_percent ?? 0);
-            $vatAmount = $subtotal * ($taxPercent / 100);
-            $otherCharges = (float) ($purchaseOrder->other_charges ?? 0);
-            $grandTotal = $subtotal + $vatAmount + $otherCharges;
+
             $currency = $purchaseOrder->currency ?? 'USD';
+
+            // Sub Total from purchase order items
+            $subtotal = (float) $purchaseOrder->subtotal;
+
+            // Percentages
+            $servicePercent = (float) ($purchaseOrder->service_charge ?? 0);
+
+            $otherTaxPercent = (float) ($purchaseOrder->other_tax_charge ?? 0);
+
+            $taxPercent = (float) ($purchaseOrder->tax_percent ?? 0);
+
+            // Other charges are a fixed amount
+            $otherCharges = (float) ($purchaseOrder->other_charges ?? 0);
+
+            // Calculate service charge
+            $serviceAmount = ($subtotal * $servicePercent) / 100;
+
+            // Calculate other tax charge
+            $otherTaxAmount = ($subtotal * $otherTaxPercent) / 100;
+
+            // Calculate VAT / withholding
+            $vatAmount = ($subtotal * $taxPercent) / 100;
+
+            // Grand Total
+            $grandTotal = $subtotal + $serviceAmount + $otherTaxAmount + $vatAmount + $otherCharges;
         @endphp
 
         {{-- ITEMS & TOTALS TABLE --}}
@@ -221,11 +242,11 @@
                 <tr class="bg-light-green">
                     <th style="width: 6%;" class="text-center">លេខ</th>
                     <th style="width: 40%;" class="text-left">ពិព៍ណនា​</th>
-                    <th style="width: 14%;" class="text-center">កាលបរិច្ឆេទ</th>
+                    <th style="width: 13%;" class="text-center">កាលបរិច្ឆេទ</th>
                     <th style="width: 8%;" class="text-center">ឯកតា</th>
                     <th style="width: 8%;" class="text-center">បរិមាណ</th>
-                    <th style="width: 10%;" class="text-center">តម្លៃឯកតា</th>
-                    <th style="width: 9%;" class="text-center">ទឹកប្រាក់</th>
+                    <th style="width: 9%;" class="text-center">តម្លៃឯកតា</th>
+                    <th style="width: 10%;" class="text-center">ទឹកប្រាក់</th>
                 </tr>
                 <tr class="bg-light-green">
                     <th class="text-center">Item</th>
@@ -248,11 +269,11 @@
                         <td class="text-center">{{ $item->unit }}</td>
                         <td class="text-center">{{ number_format($item->quantity) }}</td>
                         <td class="text-right">{{ number_format($item->unit_price, 2) }}</td>
-                        <td class="text-right font-bold">{{ number_format($item->total, 2) }}</td>
+                        <td class="text-right">{{ number_format($item->total, 2) }}</td>
                     </tr>
                 @endforeach
                 {{-- Fill empty rows up to 5 --}}
-                @for ($i = count($purchaseOrder->items); $i < 5; $i++)
+                @for ($i = count($purchaseOrder->items); $i < 7; $i++)
                     <tr>
                         <td class="text-center">{{ $i + 1 }}</td>
                         <td>&nbsp;</td>
@@ -274,39 +295,172 @@
                     <strong>Note:</strong>
                     <p style="margin: 6px 0 0 0;  color: #4b5563;">
                         1. Please notify us immediately if you are unable to deliver as specified.<br>
-                        2. Check will be used to settle this order if the settled amount is equal to or greater than USD150.<br>
+                        2. Check will be used to settle this order if the settled amount is equal to or greater than
+                        USD150.<br>
                         3. Please send all correspondence to address above.
                         @if (!empty($purchaseOrder->notes))
-                            <br>{!! nl2br(e($purchaseOrder->notes)) !!}
+
+                            @php
+                                $additionalNotes = preg_split('/\r\n|\r|\n/', trim($purchaseOrder->notes));
+
+                                $number = 4;
+                            @endphp
+
+                            @foreach ($additionalNotes as $note)
+                                @if (trim($note) !== '')
+                                    <br>
+
+                                    {{ $number }}.
+                                    {{ trim($note) }}
+
+                                    @php
+                                        $number++;
+                                    @endphp
+                                @endif
+                            @endforeach
+
                         @endif
+
                     </p>
                 </td>
 
                 {{-- Totals Column --}}
-                <td style="width: 40%; padding: 0;" class="align-top">
-                    <table class="totals-table" style="width: 100%; border-collapse: collapse; font-size: 11px;">
+                <td
+                    style="
+                        width:40%;
+                        padding:0;
+                        vertical-align:top;
+                    ">
+
+                    <table class="totals-table"
+                        style="
+                            width:100%;
+                            border-collapse:collapse;
+                            font-size:11px;
+                        ">
+
+                        {{-- SUB TOTAL --}}
                         <tr>
-                            <td class="font-bold">SUB TOTAL</td>
-                            <td class="text-right font-bold">{{ $currency }} {{ number_format($subtotal, 2) }}
+
+                            <td class="font-bold">
+                                SUB TOTAL
                             </td>
+
+                            <td class="text-right font-bold">
+
+                                {{ $currency }}
+                                {{ number_format($subtotal, 2) }}
+
+                            </td>
+
                         </tr>
+
+
+                        {{-- SERVICE CHARGE --}}
                         <tr>
-                            <td>VAT ({{ number_format($taxPercent, 2) }}%) if applicable</td>
-                            <td class="text-right font-bold">{{ $currency }} {{ number_format($vatAmount, 2) }}
+
+                            <td>
+
+                                Service Charge
+                                ({{ number_format($servicePercent, 2) }}%)
+
                             </td>
+
+                            <td class="text-right font-bold">
+
+                                {{ $currency }}
+                                {{ number_format($serviceAmount, 2) }}
+
+                            </td>
+
                         </tr>
+
+
+                        {{-- OTHER TAX CHARGE --}}
                         <tr>
-                            <td>Other Charges</td>
-                            <td class="text-right font-bold">{{ $currency }} {{ number_format($otherCharges, 2) }}
+
+                            <td>
+
+                                Other Tax Charge
+                                ({{ number_format($otherTaxPercent, 2) }}%)
+
                             </td>
+
+                            <td class="text-right font-bold">
+
+                                {{ $currency }}
+                                {{ number_format($otherTaxAmount, 2) }}
+
+                            </td>
+
                         </tr>
+
+
+                        {{-- VAT --}}
                         <tr>
-                            <td class="font-bold" style="font-size: 12px; background: #e6f4ea;">TOTAL</td>
-                            <td class="text-right font-bold" style="font-size: 12px; color: #14532d;">
-                                {{ $currency }} {{ number_format($grandTotal, 2) }}
+
+                            <td>
+
+                                VAT
+                                ({{ number_format($taxPercent, 2) }}%)
+                                if applicable
+
                             </td>
+
+                            <td class="text-right font-bold">
+
+                                {{ $currency }}
+                                {{ number_format($vatAmount, 2) }}
+
+                            </td>
+
                         </tr>
+
+
+                        {{-- OTHER CHARGES --}}
+                        <tr>
+
+                            <td>
+                                Other Charges
+                            </td>
+
+                            <td class="text-right font-bold">
+
+                                {{ $currency }}
+                                {{ number_format($otherCharges, 2) }}
+
+                            </td>
+
+                        </tr>
+
+
+                        {{-- TOTAL --}}
+                        <tr>
+
+                            <td class="font-bold"
+                                style="
+                                    font-size:12px;
+                                    background:#e6f4ea;
+                                ">
+                                TOTAL
+                            </td>
+
+                            <td class="text-right font-bold"
+                                style="
+                                    font-size:12px;
+                                    color:#14532d;
+                                    background:#e6f4ea;
+                                ">
+
+                                {{ $currency }}
+                                {{ number_format($grandTotal, 2) }}
+
+                            </td>
+
+                        </tr>
+
                     </table>
+
                 </td>
             </tr>
         </table>

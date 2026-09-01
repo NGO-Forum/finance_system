@@ -48,7 +48,16 @@
                 </div>
 
                 {{-- Button --}}
-                <div>
+                <div class="flex flex-wrap gap-6">
+
+                    <a href="{{ route('verbal-quotes.template.pdf') }}" target="_blank"
+                        class="inline-flex items-center gap-2
+                                px-4 py-2
+                                bg-red-600 hover:bg-red-700
+                                text-white rounded-lg
+                                font-medium">
+                        PDF Template
+                    </a>
 
                     <a href="{{ route('verbal-quotes.create') }}"
                         class="inline-flex items-center gap-2 px-6 py-3 bg-white text-green-700 font-semibold rounded-xl shadow-lg hover:bg-green-50 transition-all duration-300 hover:scale-105">

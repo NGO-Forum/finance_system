@@ -85,6 +85,22 @@ return new class extends Migration
 
             $table->string('allow_photos')->nullable();
 
+            $table->text('remark')->nullable();
+
+            $table->enum('network', [
+                'RCC',
+                'BWG',
+                'NECCAW',
+                'GGESI',
+                'NRLG',
+                'None',
+            ])->nullable();
+
+            $table->enum('dsa', [
+                'Need',
+                'Not need'
+            ])->default('Not need');
+
             // Store signature image path
             $table->string('signature')->nullable();
 

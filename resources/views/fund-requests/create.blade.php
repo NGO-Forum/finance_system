@@ -120,13 +120,6 @@
                         </p>
                     </div>
 
-                    <button type="button" onclick="addAgendaRow()" class="px-4 py-2 bg-green-600 text-white rounded-xl">
-
-                        <i class="fas fa-plus mr-2"></i>
-                        Add Item
-
-                    </button>
-
                 </div>
 
                 <div id="agendaTable" class="p-6 space-y-4">
@@ -192,7 +185,17 @@
 
                 </div>
 
+                <div class="flex justify-end px-6 py-5">
+                    <button type="button" onclick="addAgendaRow()" class="px-4 py-2 bg-green-600 text-white rounded-xl">
+
+                        <i class="fas fa-plus mr-2"></i>
+                        Add Item
+
+                    </button>
+                </div>
+
             </div>
+
 
             <div class="bg-white rounded-2xl shadow-sm border border-gray-200 mb-6">
 
@@ -208,7 +211,7 @@
 
                 <div class="p-6">
 
-                    <div class="flex items-center gap-12 flex-wrap">
+                    <div class="flex items-center gap-8 flex-wrap">
 
                         @foreach ($donors as $donor)
                             <label class="flex items-center gap-3 cursor-pointer">
@@ -238,11 +241,6 @@
                     <h2 class="font-semibold text-lg text-green-600">
                         Budget Details
                     </h2>
-
-                    <button type="button" onclick="addBudget()"
-                        class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">
-                        + Add Budget
-                    </button>
 
                 </div>
 
@@ -371,10 +369,17 @@
 
                 </div>
 
+                <div class="flex justify-end px-6 py-5">
+                    <button type="button" onclick="addBudget()"
+                        class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">
+                        + Add Budget
+                    </button>
+                </div>
+
             </div>
 
             <!-- Signature -->
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 mb-6">
+            {{-- <div class="bg-white rounded-2xl shadow-sm border border-gray-200 mb-6">
 
                 <div class="p-6">
 
@@ -443,7 +448,7 @@
 
                 </div>
 
-            </div>
+            </div> --}}
 
             <!-- Approval Workflow -->
             <div class="bg-white rounded-2xl shadow-sm border border-gray-200 mb-6">
@@ -724,9 +729,11 @@
                 'input[name="requester_signature_upload"]'
             );
 
-            fileInput.addEventListener('change', function() {
-                console.log(this.files);
-            });
+            if (fileInput) {
+                fileInput.addEventListener('change', function() {
+                    console.log(this.files);
+                });
+            }
 
             // ==========================
             // Trim Signature Canvas
@@ -1113,104 +1120,95 @@
             }
 
             window.addAgendaRow = function() {
-
                 const html = `
-                    <div class="agenda-row flex gap-4 items-start border rounded-xl p-4 bg-slate-50">
+                        <div class="agenda-row flex gap-4 items-start border rounded-xl p-4 bg-slate-50">
 
-                        <div>
+                            <div>
+                                <label class="text-xs font-medium text-slate-500">
+                                    Time
+                                </label>
 
-                            <label class="text-xs font-medium text-slate-500">
-                                Time
-                            </label>
+                                <div class="flex gap-4 mt-1">
+                                    <input
+                                        type="time"
+                                        name="agenda_start_time[]"
+                                        class="w-full border rounded-lg px-2 py-5">
 
-                            <div class="flex gap-4 mt-1">
-
-                                <input
-                                    type="time"
-                                    name="agenda_start_time[]"
-                                    class="w-full border rounded-lg px-2 py-5">
-
-                                <input
-                                    type="time"
-                                    name="agenda_end_time[]"
-                                    class="w-full border rounded-lg px-2 py-5">
-
+                                    <input
+                                        type="time"
+                                        name="agenda_end_time[]"
+                                        class="w-full border rounded-lg px-2 py-5">
+                                </div>
                             </div>
 
+                            <div class="flex-1">
+                                <label class="text-xs font-medium text-slate-500">
+                                    Activity
+                                </label>
+
+                                <textarea
+                                    name="agenda_activity[]"
+                                    rows="2"
+                                    class="w-full border rounded-lg px-3 py-2 mt-1"
+                                    placeholder="Activity description"></textarea>
+                            </div>
+
+                            <div class="w-64">
+                                <label class="text-xs font-medium text-slate-500">
+                                    Responsible Person
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="agenda_responsible_person[]"
+                                    class="w-full border rounded-lg px-3 py-5 mt-1">
+                            </div>
+
+                            <div class="w-56">
+                                <label class="text-xs font-medium text-slate-500">
+                                    Remarks
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="agenda_remarks[]"
+                                    class="w-full border rounded-lg px-3 py-5 mt-1">
+                            </div>
+
+                            <button
+                                type="button"
+                                onclick="removeAgendaRow(this)"
+                                class="text-red-600 mt-12 hover:text-red-800">
+
+                                <i class="fas fa-trash"></i>
+
+                            </button>
+
                         </div>
+                    `;
 
-                        <div class="flex-1">
+                const agendaTable = document.getElementById('agendaTable');
 
-                            <label class="text-xs font-medium text-slate-500">
-                                Activity
-                            </label>
-
-                            <textarea
-                                name="agenda_activity[]"
-                                rows="2"
-                                class="w-full border rounded-lg px-3 py-2 mt-1 resize-y focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                                placeholder="Activity description"></textarea>
-
-                        </div>
-
-                        <div class="w-64">
-
-                            <label class="text-xs font-medium text-slate-500">
-                                Responsible Person
-                            </label>
-
-                            <input
-                                type="text"
-                                name="agenda_responsible_person[]"
-                                class="w-full border rounded-lg px-3 py-5 mt-1">
-
-                        </div>
-
-                        <div class="w-56">
-
-                            <label class="text-xs font-medium text-slate-500">
-                                Remarks
-                            </label>
-
-                            <input
-                                type="text"
-                                name="agenda_remarks[]"
-                                class="w-full border rounded-lg px-3 py-5 mt-1">
-
-                        </div>
-
-                        <button
-                            type="button"
-                            onclick="removeAgendaRow(this)"
-                            class="text-red-600 mt-8 hover:text-red-800 mt-12">
-
-                            <i class="fas fa-trash"></i>
-
-                        </button>
-
-                    </div>
-                `;
-
-                document
-                    .getElementById('agendaTable')
-                    .insertAdjacentHTML(
+                if (agendaTable) {
+                    agendaTable.insertAdjacentHTML(
                         'beforeend',
                         html
                     );
-            }
+                }
+            };
+
 
             window.removeAgendaRow = function(button) {
 
-                const rows =
-                    document.querySelectorAll(
-                        '#agendaTable .agenda-row'
-                    );
+                const rows = document.querySelectorAll(
+                    '#agendaTable .agenda-row'
+                );
 
                 if (rows.length <= 1) {
                     return;
                 }
 
-                button.closest('.agenda-row').remove();
+                button.closest('.agenda-row')?.remove();
             };
 
         });

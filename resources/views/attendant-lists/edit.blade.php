@@ -68,33 +68,66 @@
 
                     <div class="grid grid-cols-1 gap-6">
 
-                        {{-- Title --}}
-                        <div>
+                        <div class="grid grid-cols-1 md:grid-cols-6 gap-5">
 
-                            <label class="mb-2 block font-semibold">
+                            {{-- Title --}}
+                            <div class="col-span-5">
 
-                                Activity Title <span class="text-red-500">*</span>
+                                <label class="mb-2 block font-semibold">
 
-                            </label>
+                                    Activity Title <span class="text-red-500">*</span>
 
-                            <input type="text" name="title" value="{{ old('title', $attendantList->title) }}"
-                                class="w-full rounded-xl border-gray-300 focus:border-green-600 focus:ring-green-600">
+                                </label>
+
+                                <input type="text" name="title" value="{{ old('title', $attendantList->title) }}"
+                                    class="w-full rounded-xl border-gray-300 focus:border-green-600 focus:ring-green-600">
+
+                            </div>
+
+                            {{-- Venue --}}
+                            <div>
+
+                                <label class="mb-2 block font-semibold">
+
+                                    Venue
+
+                                </label>
+
+                                <input type="text" name="venue" value="{{ old('venue', $attendantList->venue) }}"
+                                    class="w-full rounded-xl border-gray-300 focus:border-green-600 focus:ring-green-600">
+
+                            </div>
 
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-6 gap-5">
 
-                            {{-- Activity Date --}}
+                             {{-- Start Date --}}
                             <div>
 
                                 <label class="mb-2 block font-semibold">
 
-                                    Activity Date
+                                    Start Date
 
                                 </label>
 
-                                <input type="date" name="activity_date"
-                                    value="{{ old('activity_date', $attendantList->activity_date->format('Y-m-d')) }}"
+                                <input type="date" name="start_date"
+                                    value="{{ old('start_date', $attendantList->start_date->format('Y-m-d')) }}"
+                                    class="w-full rounded-xl border-gray-300 focus:border-green-600 focus:ring-green-600">
+
+                            </div>
+
+                             {{-- End Date --}}
+                            <div>
+
+                                <label class="mb-2 block font-semibold">
+
+                                    End Date
+
+                                </label>
+
+                                <input type="date" name="end_date"
+                                    value="{{ old('end_date', $attendantList->end_date->format('Y-m-d')) }}"
                                     class="w-full rounded-xl border-gray-300 focus:border-green-600 focus:ring-green-600">
 
                             </div>
@@ -152,20 +185,6 @@
 
                             </div>
 
-                            {{-- Venue --}}
-                            <div class="col-span-2">
-
-                                <label class="mb-2 block font-semibold">
-
-                                    Venue
-
-                                </label>
-
-                                <input type="text" name="venue" value="{{ old('venue', $attendantList->venue) }}"
-                                    class="w-full rounded-xl border-gray-300 focus:border-green-600 focus:ring-green-600">
-
-                            </div>
-
                             <div>
 
                                 <label class="mb-2 block font-semibold">
@@ -177,6 +196,18 @@
                                 <input type="number" name="max_participants"
                                     value="{{ old('max_participants', $attendantList->max_participants) }}" min="1"
                                     class="w-full rounded-xl border-gray-300 focus:border-green-600 focus:ring-green-600">
+
+                            </div>
+
+                            <div>
+                                <label class="mb-2 block text-sm font-semibold text-slate-700">
+                                    Registration Close Date & Time
+                                </label>
+
+                                <input type="datetime-local" name="registration_closed_at"
+                                    value="{{ old('registration_closed_at', $attendantList->registration_closed_at?->format('Y-m-d\TH:i')) }}"
+                                    class="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm
+                                        focus:border-green-500 focus:ring-4 focus:ring-green-100">
 
                             </div>
 

@@ -203,8 +203,9 @@
                             <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24"
                                 stroke="currentColor">
 
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5
-                                                               M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5
+                                                                   M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
 
                             </svg>
 
@@ -886,14 +887,15 @@
 
                 <div>
 
+                    {{-- SUB TOTAL --}}
                     <div
                         class="flex
-                            justify-between
-                            px-4 py-3
-                            border-b
-                            border-gray-300">
+                   justify-between
+                   px-4 py-3
+                   border-b
+                   border-gray-300">
 
-                        <span>
+                        <span class="font-medium">
                             SUB TOTAL
                         </span>
 
@@ -905,32 +907,79 @@
                     </div>
 
 
+                    {{-- SERVICE CHARGE --}}
                     <div
                         class="flex
-                            justify-between
-                            px-4 py-3
-                            border-b
-                            border-gray-300">
+                   justify-between
+                   px-4 py-3
+                   border-b
+                   border-gray-300">
 
                         <span>
-                            VAT
-                            ({{ number_format($purchaseOrder->tax_percent, 2) }}%)
+                            Service Charge
+                            ({{ number_format($purchaseOrder->service_charge ?? 0, 2) }}%)
                         </span>
 
                         <strong>
                             {{ $purchaseOrder->currency }}
-                            {{ number_format($purchaseOrder->taxAmount, 2) }}
+
+                            {{ number_format($purchaseOrder->subtotal * (($purchaseOrder->service_charge ?? 0) / 100), 2) }}
                         </strong>
 
                     </div>
 
 
+                    {{-- OTHER TAX CHARGE --}}
                     <div
                         class="flex
-                            justify-between
-                            px-4 py-3
-                            border-b
-                            border-gray-300">
+                   justify-between
+                   px-4 py-3
+                   border-b
+                   border-gray-300">
+
+                        <span>
+                            Other Tax Charge
+                            ({{ number_format($purchaseOrder->other_tax_charge ?? 0, 2) }}%)
+                        </span>
+
+                        <strong>
+                            {{ $purchaseOrder->currency }}
+
+                            {{ number_format($purchaseOrder->subtotal * (($purchaseOrder->other_tax_charge ?? 0) / 100), 2) }}
+                        </strong>
+
+                    </div>
+
+
+                    {{-- VAT --}}
+                    <div
+                        class="flex
+                   justify-between
+                   px-4 py-3
+                   border-b
+                   border-gray-300">
+
+                        <span>
+                            VAT
+                            ({{ number_format($purchaseOrder->tax_percent ?? 0, 2) }}%)
+                        </span>
+
+                        <strong>
+                            {{ $purchaseOrder->currency }}
+
+                            {{ number_format($purchaseOrder->subtotal * (($purchaseOrder->tax_percent ?? 0) / 100), 2) }}
+                        </strong>
+
+                    </div>
+
+
+                    {{-- OTHER CHARGES --}}
+                    <div
+                        class="flex
+                   justify-between
+                   px-4 py-3
+                   border-b
+                   border-gray-300">
 
                         <span>
                             Other Charges
@@ -938,18 +987,20 @@
 
                         <strong>
                             {{ $purchaseOrder->currency }}
-                            {{ number_format($purchaseOrder->other_charges, 2) }}
+                            {{ number_format($purchaseOrder->other_charges ?? 0, 2) }}
                         </strong>
 
                     </div>
 
 
+                    {{-- TOTAL --}}
                     <div
                         class="flex
                             justify-between
                             px-4 py-4
                             font-bold
-                            text-lg">
+                            text-lg
+                            bg-green-50">
 
                         <span>
                             TOTAL

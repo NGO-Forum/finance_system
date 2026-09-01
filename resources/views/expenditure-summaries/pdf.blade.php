@@ -26,7 +26,7 @@
             width: 50%;
             text-align: center;
             z-index: -1;
-            opacity: 0.05;
+            opacity: 0.08;
         }
 
         .watermark img {
@@ -51,7 +51,7 @@
         }
 
         .p-2 {
-            padding: 5px;
+            padding: 2px 5px;
         }
 
         .header-title-box {
@@ -74,11 +74,11 @@
         }
 
         .pb-1 {
-            padding-bottom: 4px;
+            padding-bottom: 2px;
         }
 
         .mb-2 {
-            margin-bottom: 8px;
+            margin-bottom: 4px;
         }
 
         .pr-4 {
@@ -176,7 +176,7 @@
         }
 
         /* Fixed Row Heights & Column Widths */
-        .h-8 {
+        ..h-20 {
             height: 24px;
         }
 
@@ -189,7 +189,7 @@
         }
 
         .w-[400px] {
-            width: 400px;
+            width: 300px;
         }
 
         .w-[50px] {
@@ -219,7 +219,7 @@
             background-color: #ffffff;
             padding: 0px 32px;
             font-size: 12px;
-            margin-top: 16px;
+            margin-top: 10px;
         }
 
         .signature-container {
@@ -229,32 +229,26 @@
 
         .signature-box {
             display: table-cell;
-            width: 40%;
-            vertical-align: top;
-        }
-
-        .signature-right {
-            display: table-cell;
-            width: 18%;
+            width: 82%;
             vertical-align: top;
         }
 
         .signature-center {
             display: table-cell;
-            width: 42%;
+            width: 18%;
             vertical-align: top;
         }
 
 
         .signature-image-wrapper {
-            height: 70px;
+            height: 50px;
             display: block;
             margin-top: 6px;
             margin-bottom: 6px;
         }
 
         .signature-image {
-            max-height: 70px;
+            max-height: 50px;
             object-fit: contain;
         }
 
@@ -285,11 +279,11 @@
             <td colspan="10" class="p-2">
                 <div class="header-container">
                     <div class="header-logo">
-                        <img src="{{ public_path('images/logo.png') }}" style="height:70px; width:100%;">
+                        <img src="{{ public_path('images/logo.png') }}" style="height:50px; width:60%;">
                     </div>
 
                     <div class="header-text">
-                        <img src="{{ public_path('images/exp.jpg') }}" style="height:70px; width:100%;">
+                        <img src="{{ public_path('images/exp.jpg') }}" style="height:50px; width:100%;">
                     </div>
                 </div>
             </td>
@@ -376,15 +370,15 @@
     <table class="table-full">
         <thead>
             <tr>
-                <th rowspan="2" class="border-black">No.</th>
-                <th rowspan="2" class="border-black">DESCRIPTION</th>
-                <th rowspan="2" class="border-black">Ref.</th>
-                <th rowspan="2" class="border-black">AV/PO/Agr#<br>AMOUNT</th>
-                <th rowspan="2" class="border-black">ACTUAL<br>EXPENSES</th>
-                <th colspan="2" class="border-black">VARIANCE</th>
-                <th rowspan="2" class="border-black">Budget Code</th>
-                <th rowspan="2" class="border-black">Donor</th>
-                <th rowspan="2" class="border-black">Donor Code</th>
+                <th rowspan="2" class="border-black" style="width: 3%;">No.</th>
+                <th rowspan="2" class="border-black" style="width: 33%;">DESCRIPTION</th>
+                <th rowspan="2" class="border-black" style="width: 5%;">Ref.</th>
+                <th rowspan="2" class="border-black" style="width: 8%;">AV/PO/Agr#<br>AMOUNT</th>
+                <th rowspan="2" class="border-black" style="width: 8%;">ACTUAL<br>EXPENSES</th>
+                <th colspan="2" class="border-black" style="width: 16%;">VARIANCE</th>
+                <th rowspan="2" class="border-black" style="width: 8%;">Budget Code</th>
+                <th rowspan="2" class="border-black" style="width: 10%;">Donor</th>
+                <th rowspan="2" class="border-black" style="width: 8%;">Donor Code</th>
             </tr>
             <tr>
                 <th class="border-black">$</th>
@@ -392,30 +386,48 @@
             </tr>
         </thead>
         <tbody>
-            @foreach ($summary->items as $index => $item)
+            @for ($i = 0; $i < 5; $i++)
+                @php
+                    $item = $summary->items->get($i);
+                @endphp
+
                 <tr>
-                    <td class="border-black text-center h-8">{{ $index + 1 }}</td>
-                    <td class="border-black p-2 w-[400px]">{{ $item->description }}</td>
+                    <td class="border-black text-center h-20">{{ $i + 1 }}</td>
+                    <td class="border-black p-2 w-[400px]">{{ $item?->description ?? '' }}</td>
                     <td class="border-black p-2 w-[50px] text-center">
-                        @if ($item->attachments && $item->attachments->count() > 0)
+                        @if ($item && $item->attachments && $item->attachments->count() > 0)
                             {{ $item->attachments->count() }}
                         @else
                             -
                         @endif
                     </td>
-                    <td class="border-black text-right p-2">{{ number_format($item->av_amount, 2) }}</td>
-                    <td class="border-black text-right p-2">{{ number_format($item->actual_expense, 2) }}</td>
                     <td class="border-black text-right p-2">
-                        {{ $item->variance_amount < 0 ? '(' . number_format(abs($item->variance_amount), 2) . ')' : number_format($item->variance_amount, 2) }}
+                        @if ($item)
+                            {{ number_format($item->av_amount ?? 0, 2) }}
+                        @endif
                     </td>
                     <td class="border-black text-right p-2">
-                        {{ number_format($item->variance_percent, 2) }}%
+                        @if ($item)
+                            {{ number_format($item->actual_expense ?? 0, 2) }}
+                        @endif
                     </td>
-                    <td class="border-black p-2 text-center">{{ $item->budget_code }}</td>
-                    <td class="border-black p-2 text-center">{{ $item->donor }}</td>
-                    <td class="border-black p-2 text-center">{{ $item->donor_code }}</td>
+                    <td class="border-black text-right p-2">
+                        @if ($item)
+                            {{ ($item->variance_amount ?? 0) < 0
+                                ? '(' . number_format(abs($item->variance_amount), 2) . ')'
+                                : number_format($item->variance_amount ?? 0, 2) }}
+                        @endif
+                    </td>
+                    <td class="border-black text-right p-2">
+                        @if ($item)
+                            {{ number_format($item->variance_percent ?? 0, 2) }}%
+                        @endif
+                    </td>
+                    <td class="border-black p-2 text-center">{{ $item->budget_code ?? '' }}</td>
+                    <td class="border-black p-2 text-center">{{ $item->donor ?? '' }}</td>
+                    <td class="border-black p-2 text-center">{{ $item->donor_code ?? '' }}</td>
                 </tr>
-            @endforeach
+            @endfor
 
             {{-- TOTAL ROW --}}
             <tr class="font-bold">
@@ -536,10 +548,7 @@
                 <p class="text-base"><span class="font-bold">Prepared by:</span>
                     {{ $summary->user?->name }}</p>
                 <div class="signature-image-wrapper">
-                    @if ($summary->prepared_signature)
-                        <img src="{{ public_path('storage/' . $summary->prepared_signature) }}"
-                            alt="Prepared Signature" class="signature-image">
-                    @endif
+
                 </div>
                 <div class="space-y-2">
                     <p><span class="font-bold">Position:</span> {{ $summary->user?->position ?? '' }}</p>
@@ -551,36 +560,14 @@
             {{-- Reviewed By --}}
             <div class="signature-center text-left">
                 <p class="text-base"><span class="font-bold">Reviewed by:</span>
-                    {{ $summary->reviewer?->name ?? '' }}</p>
+                    {{ $summary->reviewer?->name ?? '' }}
+                </p>
                 <div class="signature-image-wrapper">
-                    @if ($summary->reviewer_signature)
-                        <img src="{{ public_path('storage/' . $summary->reviewer_signature) }}"
-                            alt="Reviewer Signature" class="signature-image">
-                    @endif
-                </div>
-                <div class="space-y-2">
-                    <p><span class="font-bold">Position:</span> {{ $summary->reviewer?->position ?? '' }}
-                    </p>
-                    <p><span class="font-bold">Date:</span>
-                        @if ($summary->date)
-                            {{ \Carbon\Carbon::parse($summary->date)->format('d M Y') }}
-                        @endif
-                    </p>
-                </div>
-            </div>
 
-            {{-- Approved By --}}
-            <div class="signature-right text-left">
-                <p class="text-base"><span class="font-bold">Approved by:</span>
-                    {{ $summary->approver?->name ?? '' }}</p>
-                <div class="signature-image-wrapper">
-                    @if ($summary->approved_signature)
-                        <img src="{{ public_path('storage/' . $summary->approved_signature) }}"
-                            alt="Approver Signature" class="signature-image">
-                    @endif
                 </div>
                 <div class="space-y-2">
-                    <p><span class="font-bold">Position:</span> {{ $summary->approver?->position ?? '' }}
+                    <p><span class="font-bold">Position:</span>
+                        {{ $summary->reviewer?->position ?? '' }}
                     </p>
                     <p><span class="font-bold">Date:</span>
                         @if ($summary->date)

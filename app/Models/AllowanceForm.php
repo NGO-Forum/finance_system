@@ -8,6 +8,7 @@ class AllowanceForm extends Model
 {
     protected $fillable = [
         'allowance_no',
+        'attendant_list_id',
         'activity',
         'start_date',
         'end_date',
@@ -37,5 +38,13 @@ class AllowanceForm extends Model
     public function user()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function attendantList()
+    {
+        return $this->belongsTo(
+            AttendantList::class,
+            'attendant_list_id'
+        );
     }
 }

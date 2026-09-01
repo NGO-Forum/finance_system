@@ -1,7 +1,6 @@
 @extends('layout.app')
 
 @section('content')
-
     <div class="max-w-5xl mx-auto">
 
         <!-- Header -->
@@ -99,6 +98,10 @@
                             class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-500 focus:outline-none">
 
                             @foreach ($departments as $department)
+                                @if (auth()->user()->role?->name === 'Admin' && $department->name === 'Administration')
+                                    @continue
+                                @endif
+
                                 <option value="{{ $department->id }}"
                                     {{ old('department_id', $user->department_id) == $department->id ? 'selected' : '' }}>
 
@@ -122,6 +125,9 @@
                             class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-500 focus:outline-none">
 
                             @foreach ($roles as $role)
+                                @if (auth()->user()->role?->name === 'Admin' && $role->name === 'Admin')
+                                    @continue
+                                @endif
                                 <option value="{{ $role->id }}"
                                     {{ old('role_id', $user->role_id) == $role->id ? 'selected' : '' }}>
 
@@ -195,5 +201,4 @@
         </div>
 
     </div>
-
 @endsection

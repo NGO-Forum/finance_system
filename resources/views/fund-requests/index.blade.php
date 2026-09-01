@@ -20,12 +20,21 @@
 
                 </div>
 
-                <a href="{{ route('fund-requests.create') }}"
-                    class="bg-white text-green-600 px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition">
+                <div class="flex justify-between gap-6">
 
-                    + New Concept Note
+                    <a href="{{ route('fund-requests.template.word') }}"
+                        class="bg-red-600 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition">
+                        Word Template
+                    </a>
 
-                </a>
+                    <a href="{{ route('fund-requests.create') }}"
+                        class="bg-white text-green-600 px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition">
+
+                        + New Concept Note
+
+                    </a>
+
+                </div>
 
             </div>
 
@@ -211,15 +220,15 @@
                                         <div id="menu-{{ $fundRequest->id }}"
                                             class="hidden absolute right-0 -mt-3 w-12 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden z-50">
 
-                                            @if ($fundRequest->status === 'Approved')
-                                                <a href="{{ route('fund-requests.pdf', $fundRequest) }}" target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    class="flex items-center px-4 py-3 text-sm text-red-600 hover:bg-red-50">
+                                            {{-- @if ($fundRequest->status === 'Approved') --}}
+                                            <a href="{{ route('fund-requests.pdf', $fundRequest) }}" target="_blank"
+                                                rel="noopener noreferrer"
+                                                class="flex items-center px-4 py-3 text-sm text-red-600 hover:bg-red-50">
 
-                                                    <i class="fas fa-file-pdf"></i>
+                                                <i class="fas fa-file-pdf"></i>
 
-                                                </a>
-                                            @endif
+                                            </a>
+                                            {{-- @endif --}}
 
 
                                             <a href="{{ route('fund-requests.show', $fundRequest) }}"

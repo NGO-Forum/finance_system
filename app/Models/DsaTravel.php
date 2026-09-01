@@ -19,10 +19,12 @@ class DsaTravel extends Model
         'purpose',
         'departure_time',
         'arrival_time',
+        'km',
     ];
 
     protected $casts = [
         'travel_date' => 'date',
+        'km' => 'decimal:2',
     ];
 
 

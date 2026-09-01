@@ -123,13 +123,6 @@
                         </p>
                     </div>
 
-                    <button type="button" onclick="addAgendaRow()" class="px-4 py-2 bg-green-600 text-white rounded-xl">
-
-                        <i class="fas fa-plus mr-2"></i>
-                        Add Item
-
-                    </button>
-
                 </div>
 
                 <div id="agendaTable" class="p-6 space-y-4">
@@ -267,6 +260,15 @@
 
                 </div>
 
+                <div class="flex justify-end px-6 py-5">
+                    <button type="button" onclick="addAgendaRow()" class="px-4 py-2 bg-green-600 text-white rounded-xl">
+
+                        <i class="fas fa-plus mr-2"></i>
+                        Add Item
+
+                    </button>
+                </div>
+
             </div>
 
             {{-- Donor --}}
@@ -315,11 +317,6 @@
                     <h2 class="font-semibold text-lg text-green-600">
                         Budget Details
                     </h2>
-
-                    <button type="button" onclick="addBudget()"
-                        class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">
-                        + Add Budget
-                    </button>
 
                 </div>
 
@@ -402,7 +399,7 @@
                                         <label class="text-sm font-medium">
                                             Donor Code
                                         </label>
-                                        <input type="text" name="donor[]" placeholder="Donor code"
+                                        <input type="text" name="donor_code[]" placeholder="Donor code"
                                             value="{{ $item->donor_code }}"
                                             class="w-full rounded-lg border-green-300 mt-1">
                                     </div>
@@ -445,6 +442,13 @@
 
                     </div>
 
+                </div>
+
+                <div class="flex justify-end px-6 py-5">
+                    <button type="button" onclick="addBudget()"
+                        class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">
+                        + Add Budget
+                    </button>
                 </div>
 
             </div>
@@ -1250,9 +1254,7 @@
         };
 
         window.removeAgendaRow = function(button) {
-
-            const rows =
-                document.querySelectorAll('#agendaTable .agenda-row');
+            const rows = document.querySelectorAll('#agendaTable .agenda-row');
 
             if (rows.length <= 1) {
                 return;

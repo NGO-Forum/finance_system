@@ -133,7 +133,12 @@
 
                     </div>
 
-                    <div class="flex shrink-0 items-center gap-3">
+                    <div class="flex shrink-0 items-center gap-6">
+
+                        <a href="{{ route('goods-received-notes.template') }}" target="_blank"
+                            class="px-4 py-3 bg-red-600 text-white rounded-lg">
+                            PDF Template
+                        </a>
 
 
                         {{-- Create button --}}
@@ -828,9 +833,9 @@
                                         </button>
 
 
-        
+
                                         {{-- DROPDOWN --}}
-        
+
 
                                         <div id="grn-menu-{{ $grn->id }}"
                                             class="absolute right-6 top-5 z-50 hidden w-14
@@ -869,7 +874,7 @@
 
                                                 </span>
 
-                                              
+
 
                                             </a>
 
@@ -1151,7 +1156,6 @@
     </div>
 
     <script>
-
         function toggleGrnMenu(id) {
 
             const menu = document.getElementById(

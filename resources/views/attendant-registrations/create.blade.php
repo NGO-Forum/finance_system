@@ -86,7 +86,8 @@
                                 ឈ្មោះពេញ (Full Name) <span class="text-red-500">*</span>
                             </label>
 
-                            <input type="text" name="full_name" value="{{ old('full_name') }}" required placeholder="Enter your name"
+                            <input type="text" name="full_name" value="{{ old('full_name') }}" required
+                                placeholder="Enter your name"
                                 class="w-full text-xs md:text-sm rounded-xl border border-slate-300 px-4 py-3 focus:border-green-500 focus:ring-4 focus:ring-green-100">
 
                         </div>
@@ -98,7 +99,8 @@
                                 ភេទ (Gender)
                             </label>
 
-                            <select name="gender" class="w-full rounded-xl border text-xs md:text-sm border-slate-300 px-4 py-3">
+                            <select name="gender"
+                                class="w-full rounded-xl border text-xs md:text-sm border-slate-300 px-4 py-3">
 
                                 <option value="">Select</option>
 
@@ -130,7 +132,8 @@
                                 ក្រុមអាយុ (Age Group)
                             </label>
 
-                            <select name="age_group" class="w-full text-xs md:text-sm rounded-xl border border-slate-300 px-4 py-3">
+                            <select name="age_group"
+                                class="w-full text-xs md:text-sm rounded-xl border border-slate-300 px-4 py-3">
 
                                 <option value="">Select</option>
 
@@ -160,7 +163,8 @@
                                 ជាស្ត្រីងាយរងគ្រោះ (Vulnerable Woman)
                             </label>
 
-                            <select name="vulnerable_women" class="w-full text-xs md:text-sm rounded-xl border border-slate-300 px-4 py-3">
+                            <select name="vulnerable_women"
+                                class="w-full text-xs md:text-sm rounded-xl border border-slate-300 px-4 py-3">
 
                                 <option value="No" {{ old('vulnerable_women', 'No') == 'No' ? 'selected' : '' }}>
                                     No
@@ -181,7 +185,8 @@
                                 ជនជាតិដើមភាគតិច (Indigenous People)
                             </label>
 
-                            <select name="indigenous" class="w-full text-xs md:text-sm rounded-xl border border-slate-300 px-4 py-3">
+                            <select name="indigenous"
+                                class="w-full text-xs md:text-sm rounded-xl border border-slate-300 px-4 py-3">
 
                                 <option value="No" {{ old('indigenous', 'No') == 'No' ? 'selected' : '' }}>
                                     No
@@ -202,7 +207,8 @@
                                 ស្ថានភាពគ្រួសារក្រីក្រ (IDPoor Status)
                             </label>
 
-                            <select name="poor_status" class="w-full text-xs md:text-sm rounded-xl border border-slate-300 px-4 py-3">
+                            <select name="poor_status"
+                                class="w-full text-xs md:text-sm rounded-xl border border-slate-300 px-4 py-3">
 
                                 <option value="">Select</option>
 
@@ -229,7 +235,8 @@
                                 ជនមានពិការភាព (Person with Disability)
                             </label>
 
-                            <select name="disability" class="w-full text-xs md:text-sm rounded-xl border border-slate-300 px-4 py-3">
+                            <select name="disability"
+                                class="w-full text-xs md:text-sm rounded-xl border border-slate-300 px-4 py-3">
 
                                 <option value="No" {{ old('disability', 'No') == 'No' ? 'selected' : '' }}>
                                     No
@@ -243,14 +250,15 @@
 
                         </div>
 
-                        {{-- Allow Photos --}}
+                        {{-- Unique --}}
                         <div>
 
                             <label class="mb-2 block text-xs md:text-sm font-semibold text-slate-700">
                                 ចូលរួមលើកទី១ (Unique count)
                             </label>
 
-                            <select name="unique_count" class="w-full text-xs md:text-sm rounded-xl border border-slate-300 px-4 py-3">
+                            <select name="unique_count"
+                                class="w-full text-xs md:text-sm rounded-xl border border-slate-300 px-4 py-3">
 
                                 <option value="No" {{ old('unique_count', 'No') == 'No' ? 'selected' : '' }}>
                                     No
@@ -261,6 +269,19 @@
                                 </option>
 
                             </select>
+
+                        </div>
+
+                        {{--  Remark --}}
+                        <div class="md:col-span-2">
+
+                            <label class="mb-2 block text-xs md:text-sm font-semibold text-slate-700">
+                                តម្រូវការបន្ថែម (Remark)
+                            </label>
+
+                            <textarea name="remark" rows="4" placeholder="Enter remark"
+                                class="w-full text-xs md:text-sm rounded-xl border border-slate-300 px-4 py-3
+                                focus:border-green-500 focus:ring-4 focus:ring-green-100">{{ old('remark') }}</textarea>
 
                         </div>
 
@@ -282,9 +303,48 @@
                                 ស្ថាប័ន/អង្គភាព (Institution/Organization)
                             </label>
 
-                            <input type="text" name="institution" value="{{ old('institution') }}" placeholder="Enter"
+                            <input type="text" name="institution" value="{{ old('institution') }}"
+                                placeholder="Enter"
                                 class="w-full text-xs md:text-sm rounded-xl border border-slate-300 px-4 py-3">
 
+                        </div>
+
+                        <div>
+                            <label class="mb-2 block text-xs md:text-sm font-semibold text-slate-700">
+                                បណ្តាញ (Network)
+                            </label>
+
+                            <select name="network"
+                                class="w-full text-xs md:text-sm rounded-xl border border-slate-300 px-4 py-3
+                                    focus:border-green-500 focus:ring-4 focus:ring-green-100">
+
+                                <option value="">Select Network</option>
+
+                                <option value="RCC" {{ old('network') == 'RCC' ? 'selected' : '' }}>
+                                    RCC
+                                </option>
+
+                                <option value="BWG" {{ old('network') == 'BWG' ? 'selected' : '' }}>
+                                    BWG
+                                </option>
+
+                                <option value="NECCAW" {{ old('network') == 'NECCAW' ? 'selected' : '' }}>
+                                    NECCAW
+                                </option>
+
+                                <option value="GGESI" {{ old('network') == 'GGESI' ? 'selected' : '' }}>
+                                    GGESI
+                                </option>
+
+                                <option value="NRLG" {{ old('network') == 'NRLG' ? 'selected' : '' }}>
+                                    NRLG
+                                </option>
+
+                                <option value="None" {{ old('network') == 'None' ? 'selected' : '' }}>
+                                    None
+                                </option>
+
+                            </select>
                         </div>
 
                         {{-- Position --}}
@@ -312,7 +372,7 @@
                         </div>
 
                         {{-- Email --}}
-                        <div>
+                        <div class="col-span-2">
 
                             <label class="mb-2 block text-xs md:text-sm font-semibold text-slate-700">
                                 អ៊ីមែល (Email)
@@ -436,6 +496,29 @@
 
                                 </div>
 
+
+                                {{-- DSA --}}
+                                <div class="col-span-2">
+                                    <label class="mb-2 block text-xs md:text-sm font-semibold text-slate-700">
+                                        DSA (Daily Subsistence Allowance)
+                                    </label>
+
+                                    <select id="dsa" name="dsa"
+                                        class="w-full text-xs md:text-sm rounded-xl border border-slate-300 px-4 py-3
+                                            focus:border-green-500 focus:ring-4 focus:ring-green-100">
+
+                                        <option value="Not need"
+                                            {{ old('dsa', 'Not need') == 'Not need' ? 'selected' : '' }}>
+                                            Not need
+                                        </option>
+
+                                        <option value="Need" {{ old('dsa') == 'Need' ? 'selected' : '' }}>
+                                            Need
+                                        </option>
+
+                                    </select>
+                                </div>
+
                             </div>
 
                         </div>
@@ -472,11 +555,36 @@
             const district = document.getElementById('district');
             const province = document.getElementById('province');
 
+            const dsa = document.getElementById('dsa');
+
             function updateResidence() {
 
                 const selected = document.querySelector(
                     'input[name="residence_type"]:checked'
                 )?.value;
+
+                if (selected === 'Phnom Penh') {
+
+                    addressFields.classList.add('hidden');
+
+                    village.required = false;
+                    commune.required = false;
+                    district.required = false;
+                    province.required = false;
+
+                    village.value = '';
+                    commune.value = '';
+                    district.value = '';
+
+                    province.value = 'Phnom Penh';
+
+
+                    // Automatically set DSA = Not need
+                    dsa.value = 'Not need';
+
+                    return;
+                }
+
 
                 if (selected === 'Community') {
 

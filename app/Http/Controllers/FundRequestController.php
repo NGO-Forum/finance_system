@@ -18,6 +18,13 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use iio\libmergepdf\Merger;
 use App\Models\DonorLogo;
 
+use PhpOffice\PhpWord\PhpWord;
+use PhpOffice\PhpWord\IOFactory;
+use PhpOffice\PhpWord\SimpleType\Jc;
+use PhpOffice\PhpWord\SimpleType\JcTable;
+use PhpOffice\PhpWord\Style\Language;
+use PhpOffice\PhpWord\Element\TextRun;
+
 class FundRequestController extends Controller
 {
     public function index(Request $request)
@@ -224,7 +231,6 @@ class FundRequestController extends Controller
                 'requester_signature' => $signature,
                 'user_id' => auth()->id(),
                 'department_id' => auth()->user()->department_id,
-                'status' => $status,
             ]);
 
             $fundRequest->donorLogos()->sync(
@@ -1087,4 +1093,29 @@ class FundRequestController extends Controller
     //         ]
     //     );
     // }
+
+    public function exportWordTemplate()
+    {
+
+        $filePath = storage_path(
+            'app/templates/FM02-02-Concept-Note-Template.docx'
+        );
+
+
+        if (!file_exists($filePath)) {
+            abort(
+                404,
+                'FM02-02 Word template not found.'
+            );
+        }
+
+        return response()->download(
+            $filePath,
+            'FM02-02-Concept-Note-Template.docx',
+            [
+                'Content-Type' =>
+                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            ]
+        );
+    }
 }

@@ -43,7 +43,18 @@
                 </div>
 
                 {{-- Right --}}
-                <div class="flex gap-3">
+                <div class="flex gap-6">
+
+                    <a href="{{ route('quotation-analyses.template.pdf') }}" target="_blank"
+                        class="inline-flex items-center gap-2
+                            px-4 py-2
+                            bg-red-600
+                            hover:bg-red-700
+                            text-white
+                            rounded-lg
+                            font-medium">
+                        PDF Template
+                    </a>
 
                     <a href="{{ route('quotation-analyses.create') }}"
                         class="inline-flex items-center gap-3 px-7 py-3 rounded-2xl bg-white text-green-700 font-semibold shadow-lg hover:bg-green-50 hover:scale-105 transition-all duration-300">

@@ -14,14 +14,26 @@ use App\Models\DonorLogo;
 
 class AttendantRegistrationController extends Controller
 {
-    /**
-     * Display registrations for an attendance list.
-     */
-    public function index(AttendantList $attendantList)
+
+    public function index(Request $request, AttendantList $attendantList)
     {
         $registrations = $attendantList->registrations()
+            ->when($request->filled('search'), function ($query) use ($request) {
+                $search = $request->search;
+
+                $query->where(function ($q) use ($search) {
+                    $q->where('full_name', 'like', "%{$search}%")
+                        ->orWhere('phone', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%")
+                        ->orWhere('institution', 'like', "%{$search}%");
+                });
+            })
+            ->when($request->filled('network'), function ($query) use ($request) {
+                $query->where('network', $request->network);
+            })
             ->latest()
-            ->paginate(10);
+            ->paginate(10)
+            ->withQueryString();
 
         return view('attendant-registrations.index', compact(
             'attendantList',
@@ -29,14 +41,21 @@ class AttendantRegistrationController extends Controller
         ));
     }
 
-    /**
-     * Public registration form.
-     */
+
     public function create(string $token)
     {
         $attendantList = AttendantList::where('registration_token', $token)
             ->where('registration_enabled', true)
             ->firstOrFail();
+
+        // Check registration closing time
+        if (
+            $attendantList->registration_closed_at &&
+            now()->greaterThanOrEqualTo($attendantList->registration_closed_at)
+        ) {
+            return redirect()->route('attendant.registration.closed');
+        }
+
 
         if (
             $attendantList->max_participants &&
@@ -48,16 +67,23 @@ class AttendantRegistrationController extends Controller
         return view('attendant-registrations.create', compact('attendantList'));
     }
 
-    /**
-     * Store registration.
-     */
+
     public function store(Request $request, string $token)
     {
         $attendantList = AttendantList::where('registration_token', $token)
             ->where('registration_enabled', true)
             ->firstOrFail();
 
-        $request->validate([
+
+        if (
+            $attendantList->registration_closed_at &&
+            now()->greaterThanOrEqualTo($attendantList->registration_closed_at)
+        ) {
+            return redirect()->route('attendant.registration.closed');
+        }
+
+
+        $validated = $request->validate([
             'full_name'       => 'required|string|max:255',
             'gender'          => 'nullable|in:Female,Male,Other,Prefer not to say',
             'age_group'       => 'nullable|in:<15,15-30,31-60,>60',
@@ -83,6 +109,12 @@ class AttendantRegistrationController extends Controller
             'allow_photos'    => 'nullable|image|mimes:png,jpg,jpeg|max:2048',
 
             'signature'       => 'nullable|image|mimes:png,jpg,jpeg|max:2048',
+
+            'remark' => 'nullable|string',
+
+            'network' => 'nullable|in:RCC,BWG,NECCAW,GGESI,NRLG,None',
+
+            'dsa' => 'required|in:Need,Not need',
         ]);
 
         $signature = null;
@@ -97,6 +129,13 @@ class AttendantRegistrationController extends Controller
             $signature = $request->file('allow_photos')
                 ->store('attendant-allow_photos', 'public');
         }
+
+        $dsa = $validated['dsa'];
+
+        $dsaStatus =
+            $dsa === 'Need'
+            ? 'Pending'
+            : 'Approved';
 
         $registration = AttendantRegistration::create([
             'attendant_list_id' => $attendantList->id,
@@ -125,7 +164,21 @@ class AttendantRegistrationController extends Controller
 
             'allow_photos'      => $allow_photos,
 
+            'remark' => $request->remark,
+
+            'network' => $request->network,
+
+            'dsa' => $request->dsa,
+
             'signature'         => $signature,
+
+            'dsa_status' => $dsaStatus,
+
+            'dsa_approved_by' => null,
+
+            'dsa_approved_at' => null,
+
+            'dsa_rejection_reason' => null,
         ]);
 
         return view('attendant-registrations.thank-you', [
@@ -161,6 +214,86 @@ class AttendantRegistrationController extends Controller
         return redirect()
             ->back()
             ->with('success', 'Registration deleted successfully.');
+    }
+
+
+    /**
+     * Approve DSA.
+     */
+    public function approveDsa(
+        AttendantRegistration $registration
+    ) {
+        // Only DSA requests can be approved
+        if ($registration->dsa !== 'Need') {
+            return back()->with(
+                'error',
+                'This participant does not require DSA.'
+            );
+        }
+
+        $registration->update([
+
+            'dsa_status' => 'Approved',
+
+            'dsa_approved_by' => auth()->id(),
+
+            'dsa_approved_at' => now(),
+
+            'dsa_rejection_reason' => null,
+
+        ]);
+
+        return back()->with(
+            'success',
+            'DSA approved successfully.'
+        );
+    }
+
+    /**
+     * Reject DSA.
+     */
+    public function rejectDsa(
+        Request $request,
+        AttendantRegistration $registration
+    ) {
+        $validated = $request->validate([
+
+            'dsa_rejection_reason' => [
+                'required',
+                'string',
+                'max:1000',
+            ],
+
+        ]);
+
+
+        // Only DSA requests can be rejected
+        if ($registration->dsa !== 'Need') {
+            return back()->with(
+                'error',
+                'This participant does not require DSA.'
+            );
+        }
+
+
+        $registration->update([
+
+            'dsa_status' => 'Rejected',
+
+            'dsa_approved_by' => auth()->id(),
+
+            'dsa_approved_at' => now(),
+
+            'dsa_rejection_reason' =>
+            $validated['dsa_rejection_reason'],
+
+        ]);
+
+
+        return back()->with(
+            'success',
+            'DSA rejected successfully.'
+        );
     }
 
     public function exportPdf(AttendantList $attendantList)

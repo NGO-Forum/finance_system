@@ -14,119 +14,112 @@ class UserSeeder extends Seeder
 
             // Users
             [
-                'name' => 'CHAN Vicheth',
+                'name' => 'Mr. CHAN Vicheth',
                 'email' => 'vicheth@ngoforum.org.kh',
                 'role_id' => 3,
                 'department_id' => 4,
             ],
 
             [
-                'name' => 'CHEN Sochoeun',
+                'name' => 'Mr. CHEN Sochoeun',
                 'email' => 'sochoeun@ngoforum.org.kh',
                 'role_id' => 5,
                 'department_id' => 3,
             ],
 
             [
-                'name' => 'CHHAY Bunna',
+                'name' => 'Mr. CHHAY Bunna',
                 'email' => 'bunna@ngoforum.org.kh',
                 'role_id' => 5,
                 'department_id' => 4,
             ],
 
             [
-                'name' => 'CHHAY Tola',
+                'name' => 'Ms. CHHAY Tola',
                 'email' => 'tola@ngoforum.org.kh',
                 'role_id' => 5,
                 'department_id' => 2,
             ],
 
             [
-                'name' => 'KEO Vicheka',
+                'name' => 'Ms. KEO Vicheka',
                 'email' => 'vicheka@ngoforum.org.kh',
                 'role_id' => 7,
                 'department_id' => 3,
             ],
 
             [
-                'name' => 'LIN Leaksopor',
+                'name' => 'Mrs. LIN Leaksopor',
                 'email' => 'leaksopor@ngoforum.org.kh',
                 'role_id' => 2,
                 'department_id' => 5,
             ],
 
             [
-                'name' => 'MAR Sophal',
+                'name' => 'Mr. MAR Sophal',
                 'email' => 'sophal@ngoforum.org.kh',
                 'role_id' => 3,
                 'department_id' => 2,
             ],
 
             [
-                'name' => 'MEAS Ronn',
+                'name' => 'Mr. MEAS Ronn',
                 'email' => 'ronn@ngoforum.org.kh',
                 'role_id' => 5,
                 'department_id' => 5,
             ],
 
             [
-                'name' => 'SORK Mengseu',
+                'name' => 'Mr. SORK Mengseu',
                 'email' => 'mengseu@ngoforum.org.kh',
                 'role_id' => 7,
                 'department_id' => 4,
             ],
 
             [
-                'name' => 'OUM Somaly',
-                'email' => 'somaly@ngoforum.org.kh',
-                'role_id' => 3,
-                'department_id' => 3,
-            ],
-
-            [
-                'name' => 'RIDD Chansoksreynich',
+                'name' => 'Ms. RIDD Chansoksreynich',
                 'email' => 'sreynich@ngoforum.org.kh',
                 'role_id' => 5,
                 'department_id' => 5,
             ],
 
             [
-                'name' => 'DORN Sochea',
+                'name' => 'Ms. DORN Sochea',
                 'email' => 'sochea@ngoforum.org.kh',
                 'role_id' => 6,
                 'department_id' => 5,
             ],
 
             [
-                'name' => 'SOEUNG Saroeun',
+                'name' => 'Mr. SOEUNG Saroeun',
                 'email' => 'saroeun@ngoforum.org.kh',
                 'role_id' => 4,
                 'department_id' => 1,
             ],
 
             [
-                'name' => 'SOL Lyhorng',
+                'name' => 'Ms. SOL Lyhorng',
                 'email' => 'sollyhorng@ngoforum.org.kh',
                 'role_id' => 5,
                 'department_id' => 4,
             ],
 
             [
-                'name' => 'SOM Chettana',
+                'name' => 'Mr. SOM Chettana',
                 'email' => 'chettana@ngoforum.org.kh',
-                'role_id' => 2,
+                'role_id' => 3,
                 'department_id' => 5,
             ],
 
             [
-                'name' => 'HEOURN Sreytouch',
+                'name' => 'Ms. HEOURN Sreytouch',
                 'email' => 'sreytouch@ngoforum.org.kh',
                 'role_id' => 7,
                 'department_id' => 3,
             ],
 
             [
-                'name' => 'Y Reaksmey',
+                'name' => 'Ms. Y Reaksmey',
                 'email' => 'reaksmey@ngoforum.org.kh',
                 'role_id' => 6,
                 'department_id' => 3,

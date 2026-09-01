@@ -317,17 +317,18 @@
         <thead>
             <!-- Title Row inside Table -->
             <tr>
-                <th colspan="5" class="section-title-row">
+                <th colspan="6" class="section-title-row">
                     ព័ត៌មានការធ្វើដំណើរ / TRAVEL INFORMATON
                 </th>
             </tr>
             <!-- Table Column Headers -->
             <tr>
-                <th style="width: 15%;">កាលបរិច្ឆេទ<br>Date</th>
-                <th style="width: 18%;">ចេញពី<br>From</th>
-                <th style="width: 18%;">ទៅកាន់<br>To</th>
-                <th style="width: 29%;">គោលបំណង<br>Purpose</th>
-                <th style="width: 20%;">ម៉ោងចេញ-ម៉ោងទៅដល់<br>Leaving-Arriving Time</th>
+                <th style="width: 13%;">កាលបរិច្ឆេទ<br>Date</th>
+                <th style="width: 16%;">ចេញពី<br>From</th>
+                <th style="width: 16%;">ទៅកាន់<br>To</th>
+                <th style="width: 8%;">ចម្ងាយ<br>Dist (km)</th>
+                <th style="width: 28%;">គោលបំណង<br>Purpose</th>
+                <th style="width: 19%; text-align: center">ម៉ោងចេញ-ម៉ោងទៅដល់<br>Leaving-Arriving Time</th>
             </tr>
         </thead>
         <tbody>
@@ -342,6 +343,7 @@
                     <td class="text-center">{{ optional($travel->travel_date)->format('d-M-Y') }}</td>
                     <td>{{ $travel->from_location }}</td>
                     <td>{{ $travel->to_location }}</td>
+                    <td style="text-align: center;">{{ $travel->km }}</td>
                     <td>{{ $travel->purpose }}</td>
                     <td class="text-center">
                         {{ $travel->departure_time ? \Carbon\Carbon::parse($travel->departure_time)->format('h:i A') : '' }}
@@ -355,6 +357,7 @@
             @for ($i = $travelCount; $i < $minRows; $i++)
                 <tr>
                     <td>&nbsp;</td>
+                    <td></td>
                     <td></td>
                     <td></td>
                     <td></td>
@@ -389,14 +392,14 @@
                 </th>
             </tr>
             <tr>
-                <th style="width:10%">Date</th>
+                <th style="width:11%">Date</th>
                 <th style="width:7%">Brk</th>
                 <th style="width:7%">Lnc</th>
                 <th style="width:7%">Dnn</th>
                 <th style="width:8%">Acc</th>
                 <th style="width:8%">Transp</th>
                 <th style="width:8%">Inciden</th>
-                <th style="width:10%">Total</th>
+                <th style="width:9%">Total</th>
             </tr>
         </thead>
 
@@ -533,7 +536,7 @@
             <td class="signature-left">
                 <p><strong>Verified by:</strong></p>
 
-                <span class="signature-image-wrapper"></span><br><br>
+                <span class="signature-image-wrapper"></span><br>
 
                 <p>............................................</p>
                 <p>(Name and Signature)</p>
@@ -546,7 +549,7 @@
             <td class="signature-center">
                 <p><strong>Paid by:</strong></p>
 
-                <span class="signature-image-wrapper"></span><br><br>
+                <span class="signature-image-wrapper"></span><br>
 
                 <p>............................................</p>
                 <p>(Name and Signature)</p>
@@ -559,7 +562,7 @@
             <td class="signature-rigth">
                 <p><strong>Received by:</strong></p>
 
-                <span class="signature-image-wrapper"></span><br><br>
+                <span class="signature-image-wrapper"></span><br>
 
                 <p>............................................</p>
                 <p>(Name and Signature)</p>

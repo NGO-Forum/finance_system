@@ -229,13 +229,6 @@
 
                     </div>
 
-                    <button type="button" id="addRow"
-                        class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white">
-
-                        + Add Item
-
-                    </button>
-
                 </div>
 
                 <div id="itemBody" class="p-6 space-y-5">
@@ -252,7 +245,7 @@
 
                             <button type="button" class="removeRow text-red-600 hover:text-red-700">
 
-                                Remove
+                                <i class="fas fa-trash"></i>
 
                             </button>
 
@@ -293,7 +286,8 @@
                                     Unit
                                 </label>
 
-                                <input type="text" name="items[0][unit]" value="1" class="w-full rounded-xl border-slate-300">
+                                <input type="text" name="items[0][unit]" value="1"
+                                    class="w-full rounded-xl border-slate-300">
 
                             </div>
 
@@ -333,6 +327,15 @@
                         </div>
 
                     </div>
+                </div>
+
+                <div class="p-6 flex justify-end">
+                    <button type="button" id="addRow"
+                        class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white">
+
+                        + Add Item
+
+                    </button>
                 </div>
 
                 {{-- Purchase Summary --}}
@@ -422,6 +425,248 @@
                     <input type="hidden" name="grand_total" id="grandTotal" value="0">
 
                 </div>
+
+
+                {{-- Approval Section --}}
+
+                <div class="bg-white shadow-lg border border-slate-200 mt-6">
+
+                    <div class="px-6 py-4 border-b bg-green-600">
+
+                        <h2 class="text-lg font-bold text-white">
+                            Approval Information
+                        </h2>
+
+                        <p class="text-sm text-slate-200 mt-1">
+                            Select who will review and approve this Purchase Request.
+                        </p>
+
+                    </div>
+
+
+                    <div class="p-6">
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            @if (auth()->user()->role?->name !== 'Manager')
+                                {{-- ========================================================= --}}
+                                {{-- Reviewed By --}}
+                                {{-- ========================================================= --}}
+
+                                <div>
+
+                                    <label for="reviewed_by" class="block text-sm font-semibold text-slate-700 mb-2">
+
+                                        Reviewed By
+                                        <span class="text-red-500">*</span>
+
+                                    </label>
+
+
+                                    <select id="reviewed_by" name="reviewed_by" required
+                                        class="w-full rounded-xl
+                                            border-slate-300
+                                            bg-white
+                                            focus:ring-green-600
+                                            focus:border-green-600">
+
+                                        <option value="">
+                                            Select Manager
+                                        </option>
+
+
+                                        @foreach ($reviewers as $reviewer)
+                                            <option value="{{ $reviewer->id }}"
+                                                {{ old('reviewed_by') == $reviewer->id ? 'selected' : '' }}>
+
+                                                {{ $reviewer->name }}
+
+                                                @if ($reviewer->role)
+                                                    — {{ $reviewer->role->name }}
+                                                @endif
+
+                                            </option>
+                                        @endforeach
+
+                                    </select>
+
+
+                                    <p class="mt-2 text-xs text-slate-500">
+                                        Only users with the Manager role can review.
+                                    </p>
+
+
+                                    @error('reviewed_by')
+                                        <p class="mt-1 text-sm text-red-600">
+                                            {{ $message }}
+                                        </p>
+                                    @enderror
+
+                                </div>
+                            @else
+                                <div>
+
+                                    <label class="block text-sm font-semibold text-slate-700 mb-2">
+
+                                        Prepare By
+
+                                    </label>
+
+
+                                    <div
+                                        class="w-full rounded-xl
+                                            border border-green-200
+                                            bg-green-50
+                                            px-4 py-3">
+
+                                        <div class="flex items-center gap-2">
+
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-600"
+                                                fill="none" viewBox="0 0 24 24" stroke="currentColor">
+
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M5 13l4 4L19 7" />
+
+                                            </svg>
+
+
+                                            <span class="font-semibold text-green-700">
+
+                                                {{ auth()->user()->name }}
+
+                                            </span>
+
+                                        </div>
+
+                                    </div>
+
+
+                                    <p class="mt-2 text-xs text-slate-500">
+
+                                        You are the Manager creating this request,
+                                        so the review is assigned to you automatically.
+
+                                    </p>
+
+
+                                    {{-- Important: submit current Manager ID --}}
+                                    <input type="hidden" name="reviewed_by" value="{{ auth()->id() }}">
+
+                                </div>
+                            @endif
+
+                            @if (auth()->user()->role?->name !== 'Manager')
+                                <div>
+
+                                    <label for="approved_by" class="block text-sm font-semibold text-slate-700 mb-2">
+
+                                        Approved By
+                                        <span class="text-red-500">*</span>
+
+                                    </label>
+
+
+                                    <select id="approved_by" name="approved_by" required
+                                        class="w-full rounded-xl
+                                            border-slate-300
+                                            bg-white
+                                            focus:ring-green-600
+                                            focus:border-green-600">
+
+                                        <option value="">
+                                            Select Manager or ED
+                                        </option>
+
+
+                                        @foreach ($approvers as $approver)
+                                            <option value="{{ $approver->id }}"
+                                                {{ old('approved_by') == $approver->id ? 'selected' : '' }}>
+
+                                                {{ $approver->name }}
+
+                                                —
+
+                                                {{ $approver->role?->name }}
+
+                                            </option>
+                                        @endforeach
+
+                                    </select>
+
+
+                                    <p class="mt-2 text-xs text-slate-500">
+
+                                        Final approval can be given by
+                                        a Manager or ED.
+
+                                    </p>
+
+
+                                    @error('approved_by')
+                                        <p class="mt-1 text-sm text-red-600">
+                                            {{ $message }}
+                                        </p>
+                                    @enderror
+
+                                </div>
+                            @else
+                                <div>
+
+                                    <label
+                                        class="block text-sm font-semibold
+                                             text-slate-700 mb-2">
+
+                                        Approved By
+
+                                    </label>
+
+
+                                    <div
+                                        class="w-full rounded-xl
+                                            border border-green-200
+                                            bg-green-50
+                                            px-4 py-3">
+
+                                        <div
+                                            class="flex items-center
+                                                gap-2 text-green-700">
+
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                                viewBox="0 0 24 24" stroke="currentColor">
+
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M5 13l4 4L19 7" />
+
+                                            </svg>
+
+                                            <span class="font-semibold">
+
+                                                ED will approve automatically
+
+                                            </span>
+
+                                        </div>
+
+                                    </div>
+
+
+                                    <p class="mt-2 text-xs text-slate-500">
+
+                                        Because you are a Manager,
+                                        the system will automatically
+                                        select an ED for final approval.
+
+                                    </p>
+
+                                </div>
+                            @endif
+
+                        </div>
+
+                    </div>
+
+                </div>
+                
+
                 <div class="flex justify-end gap-3 px-6 py-5">
 
                     <a href="{{ route('purchase-requests.index') }}"
@@ -438,6 +683,7 @@
                     </button>
 
                 </div>
+            </div>
 
         </form>
 
@@ -456,7 +702,7 @@
 
                     <button type="button" class="removeRow text-red-600 hover:text-red-700 font-medium">
 
-                        Remove
+                        <i class="fas fa-trash"></i>
 
                     </button>
 
@@ -503,7 +749,8 @@
 
                         </label>
 
-                        <input type="text" name="items[__INDEX__][unit]" value="1" class="w-full rounded-xl border-slate-300 text-right">
+                        <input type="text" name="items[__INDEX__][unit]" value="1"
+                            class="w-full rounded-xl border-slate-300 text-right">
 
                     </div>
 

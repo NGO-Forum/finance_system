@@ -8,19 +8,15 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\File;
 use Mpdf\Mpdf;
-use Mpdf\Output\Destination;
-use Mpdf\HTMLParserMode;
+use setasign\Fpdi\Tcpdf\Fpdi;
 use Barryvdh\DomPDF\Facade\Pdf;
+
+
 
 class FinanceFormController extends Controller
 {
-    /*
-    |--------------------------------------------------------------------------
-    | INDEX
-    |--------------------------------------------------------------------------
-    */
 
     public function index(Request $request)
     {
@@ -929,26 +925,32 @@ class FinanceFormController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        if (
-            $transactionType ===
-            'disbursement'
-        ) {
+        if ($transactionType === 'disbursement') {
+
+            $advance = collect($items)
+                ->filter(function ($item) {
+                    return in_array(
+                        $item['line_type'] ?? '',
+                        ['advance', 'cash_advance'],
+                        true
+                    )
+                        && (float) ($item['amount'] ?? 0) > 0;
+                })
+                ->sum(function ($item) {
+                    return (float) ($item['amount'] ?? 0);
+                });
+
+            $expense = collect($items)
+                ->filter(function ($item) {
+                    return ($item['line_type'] ?? '') === 'expense'
+                        && (float) ($item['amount'] ?? 0) > 0;
+                })
+                ->sum(function ($item) {
+                    return (float) ($item['amount'] ?? 0);
+                });
 
             return round(
-                collect($items)
-                    ->filter(function ($item) {
-
-                        return
-                            $item['line_type']
-                            === 'expense'
-                            &&
-                            (float) $item['amount'] > 0;
-                    })
-                    ->sum(function ($item) {
-
-                        return
-                            (float) $item['amount'];
-                    }),
+                max($expense - $advance, 0),
                 2
             );
         }
@@ -1804,4 +1806,19 @@ class FinanceFormController extends Controller
                 '.pdf'
         );
     }
+
+
+    public function template()
+    {
+        $pdf = Pdf::loadView(
+            'finance-forms.template',
+        );
+
+        $pdf->setPaper('A4', 'portrait');
+
+        return $pdf->stream(
+            'Finance-Form-FM02-01'.'.pdf'
+        );
+    }
+
 }

@@ -322,13 +322,6 @@
 
                     </div>
 
-                    <button type="button" onclick="addExpenseCard()"
-                        class="bg-green-600 hover:bg-green-700 text-white px-5 py-3 rounded-xl font-medium">
-
-                        + Add Expense
-
-                    </button>
-
                 </div>
 
                 <div id="expense-container" class="p-6 space-y-5">
@@ -345,7 +338,7 @@
                                 <button type="button" onclick="removeExpenseCard(this)"
                                     class="text-red-600 hover:text-red-700">
 
-                                    Remove
+                                    <i class="fas fa-trash"></i>
 
                                 </button>
 
@@ -502,6 +495,15 @@
                         </div>
                     @endforeach
 
+                </div>
+
+                <div class="p-6 flex justify-end">
+                    <button type="button" onclick="addExpenseCard()"
+                        class="bg-green-600 hover:bg-green-700 text-white px-5 py-3 rounded-xl font-medium">
+
+                        + Add Expense
+
+                    </button>
                 </div>
 
                 {{-- Summary --}}
@@ -784,7 +786,7 @@
                             onclick="removeExpenseCard(this)"
                             class="text-red-600">
 
-                            Remove
+                            <i class="fas fa-trash"></i>
 
                         </button>
 
@@ -1012,7 +1014,7 @@
                             onclick="removeExpenseCard(this)"
                             class="text-red-600 hover:text-red-700">
 
-                            Remove
+                            <i class="fas fa-trash"></i>
 
                         </button>
 

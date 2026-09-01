@@ -94,7 +94,8 @@ class ExpenditureSummaryController extends Controller
 
         $fundRequests = FundRequest::with([
             'department',
-            'user'
+            'user',
+            'items',
         ])
             ->where('status', 'Approved')
             ->whereDoesntHave('expenditureSummary')
@@ -845,6 +846,20 @@ class ExpenditureSummaryController extends Controller
                 'Content-Type' => 'application/pdf',
                 'Content-Disposition' => 'inline; filename="Expenditure-Summary-' . $summary->id . '.pdf"',
             ]
+        );
+    }
+
+
+    public function templatePdf()
+    {
+        $pdf = Pdf::loadView(
+            'expenditure-summaries.template'
+        );
+
+        $pdf->setPaper('a4', 'landscape');
+
+        return $pdf->stream(
+            'Expenditure-Summary-FM02-03-Template.pdf'
         );
     }
 }

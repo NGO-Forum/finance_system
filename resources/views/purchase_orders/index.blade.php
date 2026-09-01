@@ -144,7 +144,18 @@
                     {{-- Right: Action --}}
                     {{-- ================================================= --}}
 
-                    <div class="flex items-center">
+                    <div class="flex items-center gap-6">
+
+                        <a href="{{ route('purchase-orders.template.pdf') }}" target="_blank"
+                            class="inline-flex items-center gap-2
+                                px-4 py-2
+                                bg-red-600
+                                hover:bg-red-700
+                                text-white
+                                rounded-lg
+                                font-medium">
+                            PDF Template
+                        </a>
 
                         <a href="{{ route('purchase-orders.create') }}"
                             class="group
@@ -818,7 +829,7 @@
                                             <a href="{{ route('purchase-orders.pdf', $purchaseOrder) }}" target="_blank"
                                                 class="flex items-center px-4 py-3 text-sm text-red-600 hover:bg-red-50">
 
-                                                    <i class="fas fa-file-pdf"></i>
+                                                <i class="fas fa-file-pdf"></i>
 
                                             </a>
 
@@ -942,10 +953,10 @@
 
     <script>
         /*
-                |--------------------------------------------------------------------------
-                | Toggle Action Menu
-                |--------------------------------------------------------------------------
-                */
+                    |--------------------------------------------------------------------------
+                    | Toggle Action Menu
+                    |--------------------------------------------------------------------------
+                    */
 
         function toggleActionMenu(id) {
 

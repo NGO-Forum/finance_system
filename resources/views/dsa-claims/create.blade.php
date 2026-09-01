@@ -175,7 +175,7 @@
 
                         </div>
 
-                         {{-- Donor Code --}}
+                        {{-- Donor Code --}}
                         <div>
 
                             <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -286,6 +286,10 @@
                                 </th>
 
                                 <th class="px-4 py-4 border">
+                                    Dist (km)
+                                </th>
+
+                                <th class="px-4 py-4 border">
                                     Purpose
                                 </th>
 
@@ -333,6 +337,15 @@
 
                                     <input type="text" name="to_location[]" placeholder="Destination"
                                         class="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500">
+
+                                </td>
+
+                                <td class="border px-4 py-4">
+                                    <input type="number" name="km[]" step="0.01" min="0" placeholder="KM"
+                                        class="w-24 rounded-lg border border-slate-300
+                                            px-3 py-2 text-sm
+                                            focus:border-green-500
+                                            focus:ring-4 focus:ring-green-100">
 
                                 </td>
 

@@ -11,7 +11,8 @@
             margin: 0;
             padding: 0;
         }
-/* 
+
+        /*
         .watermark {
             position: fixed;
             top: 28%;
@@ -61,6 +62,7 @@
         .activity-table {
             width: 100%;
             border: none;
+            margin-top: 20px;
             font-size: 10px;
         }
 
@@ -75,7 +77,7 @@
             border: 1px solid #000;
             padding: 4px;
             font-size: 9px;
-            line-height: 1.8;
+            line-height: 1.5;
             text-align: justify;
         }
 
@@ -118,7 +120,7 @@
         .summary-container {
             width: 100%;
             font-size: 8.5px;
-            line-height: 1.8;
+            line-height: 1.5;
             /* Generous line height matches original document format */
             margin-top: 3px;
             color: #000;
@@ -265,12 +267,12 @@
 
                 <th rowspan="2" style="width: 11%;">ឈ្មោះអ្នកចូលរួម<br>Participant's Name</th>
 
-                <th rowspan="2" style="width: 9.5%;">ភេទ/យេនឌ័រ<br>Sex/Gender<br>
+                <th rowspan="2" style="width: 6%;">ភេទ/យេនឌ័រ<br>Sex/Gender<br>
                     <span style="font-size: 8.5px; font-weight: normal;">1. ស្រី Female<br>2. ប្រុស Male<br>3. ផ្សេងៗ
                         Others<br>4. សុំមិនបង្ហាញយេនឌ័រ Prefer to say</span>
                 </th>
 
-                <th rowspan="2" style="width: 5.5%;">អាយុ<br>Age<br>
+                <th rowspan="2" style="width: 4.5%;">អាយុ<br>Age<br>
                     <span style="font-size: 9px; font-weight: normal;">1. &lt;15<br>2. 15-&lt;=30<br>3.
                         &gt;30-60<br>4. &gt;60</span>
                 </th>
@@ -292,11 +294,11 @@
                     <img src="{{ public_path('images/indigenous.png') }}" style="width:15px;">
                 </th>
 
-                <th colspan="2" style="width: 13%;">អាសយដ្ឋាន (Address)</th>
+                <th colspan="2" style="width: 15%;">អាសយដ្ឋាន (Address)</th>
 
                 <th rowspan="2" style="width: 6.5%;">ស្ថាប័ន<br>Institutions</th>
 
-                <th rowspan="2" style="width: 6.5%;">តួនាទី<br>Position</th>
+                <th rowspan="2" style="width: 7%;">តួនាទី<br>Position</th>
 
                 <th rowspan="2" style="width: 13.5%;">លេខទូរស័ព្ទ/អ៊ីម៉ែល<br>Contact No./Email</th>
 
@@ -305,16 +307,17 @@
                 </th>
 
                 <th rowspan="2" style="width: 7%; line-height: 2;">
-                    អនុញ្ញាតឱ្យថត និងប្រើប្រាស់រូបថត<br>
-                    <span style="font-size: 10px; font-weight: normal;">Allow to take and use my photos</span>
+                    ហត្ថលេខា (អនុញ្ញាតឱ្យថត និងប្រើប្រាស់រូបថត)<br>
+                    <span style="font-size: 10px; font-weight: normal;">Signature (Allow to take and use my
+                        photos)</span>
                 </th>
 
                 <th rowspan="2" style="width: 7%;">ហត្ថលេខា<br>Signature</th>
             </tr>
             <tr>
-                <th style="font-size: 9px; font-weight: normal; width: 6.5%; line-height: 1.8;">ភូមិ (Village) និង
+                <th style="font-size: 9px; font-weight: normal; width: 7.5%; line-height: 1.8;">ភូមិ (Village) និង
                     ឃុំ/សង្កាត់ (Commune)</th>
-                <th style="font-size: 9px; font-weight: normal; width: 6.5%; line-height: 1.8;">ក្រុង/ស្រុក/ខណ្ឌ និង
+                <th style="font-size: 9px; font-weight: normal; width: 7.5%; line-height: 1.8;">ក្រុង/ស្រុក/ខណ្ឌ និង
                     ខេត្ត (District) (Province)</th>
             </tr>
         </thead>
@@ -422,6 +425,16 @@
             ផ្សេងៗ (Others): ......
             នាក់ &nbsp;&nbsp;&nbsp;&nbsp;
             សុំមិនបង្ហាញយេនឌ័រ (Prefer to say): ..... នាក់
+        </div>
+    </div>
+
+    <div style="text-align: left; font-size: 10px; line-height: 1.5;">
+        <div style="margin-top: 15px; height: 20px;">
+            <span>PREPARED BY: .................................</span>
+        </div>
+
+        <div>
+            (Signature/name/position/date)
         </div>
     </div>
 

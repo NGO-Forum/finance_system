@@ -242,22 +242,6 @@
 
                 </div>
 
-                {{-- Title --}}
-                <div class="mt-5">
-
-                    <label class="block text-base font-semibold text-green-700 mb-2">
-                        Title
-                    </label>
-
-                    <div class="bg-green-50 border border-green-100 rounded-2xl p-5">
-
-                        <p class="text-base text-gray-800">
-                            {{ $dsaClaim->title }}
-                        </p>
-
-                    </div>
-
-                </div>
 
                 {{-- Purpose --}}
                 <div class="mt-5">
@@ -347,6 +331,10 @@
                             </th>
 
                             <th class="px-6 py-4 text-left text-xs uppercase tracking-wider text-gray-600">
+                                Dist (km)
+                            </th>
+
+                            <th class="px-6 py-4 text-left text-xs uppercase tracking-wider text-gray-600">
                                 Purpose
                             </th>
 
@@ -422,7 +410,22 @@
 
                                 <td class="px-6 py-5">
 
-                                    <div class="max-w-sm">
+                                    <span
+                                        class="inline-flex items-center rounded-full
+                                            bg-green-100 px-3 py-1 text-sm
+                                            font-semibold text-green-700">
+
+                                        <i class="fas fa-location-arrow mr-2"></i>
+
+                                        {{ $travel->km ?? 0 }} km
+
+                                    </span>
+
+                                </td>
+
+                                <td class="px-6 py-5 w-80">
+
+                                    <div class="max-w-2xl">
 
                                         {{ $travel->purpose }}
 
@@ -880,7 +883,7 @@
             <div class="p-6">
 
                 @if ($dsaClaim->note)
-                    <div class="bg-gray-50 border rounded-xl p-6 leading-8 whitespace-pre-line">
+                    <div class="bg-gray-50 border rounded-xl p-6 leading-8">
 
                         {{ $dsaClaim->note }}
 

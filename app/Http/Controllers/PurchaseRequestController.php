@@ -6,10 +6,15 @@ use App\Models\PurchaseRequest;
 use App\Models\PurchaseRequestItem;
 use App\Models\Department;
 use App\Models\User;
+
+use App\Mail\PurchaseRequestNotification;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
+
 use Mpdf\Mpdf;
 use Mpdf\HTMLParserMode;
 
@@ -66,11 +71,34 @@ class PurchaseRequestController extends Controller
     {
         $user = auth()->user();
 
-        $lastPurchase = PurchaseRequest::orderByDesc('id')->first();
+        $reviewers = User::with('role')
+            ->whereHas('role', function ($query) {
+                $query->where('name', 'Manager');
+            })
+            ->orderBy('name')
+            ->get();
+
+
+        $approvers = User::with('role')
+            ->whereHas('role', function ($query) {
+                $query->whereIn('name', [
+                    'Manager',
+                    'ED',
+                ]);
+            })
+            ->orderBy('name')
+            ->get();
+
+        $lastPurchase = PurchaseRequest::orderByDesc('id')
+            ->first();
+
 
         if ($lastPurchase) {
 
-            $lastNumber = (int) substr($lastPurchase->purchase_no, -5);
+            $lastNumber = (int) substr(
+                $lastPurchase->purchase_no,
+                -5
+            );
 
             $nextNumber = $lastNumber + 1;
         } else {
@@ -78,63 +106,291 @@ class PurchaseRequestController extends Controller
             $nextNumber = 1;
         }
 
+
         $purchaseNo = sprintf(
             'PR-%s-%05d',
             date('Y'),
             $nextNumber
         );
 
+
         return view(
             'purchase-requests.create',
             compact(
                 'purchaseNo',
-                'user'
+                'user',
+                'reviewers',
+                'approvers'
             )
         );
     }
 
     public function store(Request $request)
     {
+        /*
+        |--------------------------------------------------------------------------
+        | Validation
+        |--------------------------------------------------------------------------
+        */
+
         $request->validate([
+            'request_date' => [
+                'required',
+                'date',
+            ],
 
-            'request_date' => 'required|date',
+            'donor' => [
+                'nullable',
+                'string',
+                'max:255',
+            ],
 
-            'donor' => 'nullable|string|max:255',
+            'donor_code' => [
+                'nullable',
+                'string',
+                'max:255',
+            ],
 
-            'donor_code' => 'nullable|string|max:255',
+            'budget_line' => [
+                'nullable',
+                'string',
+                'max:255',
+            ],
 
-            'budget_line' => 'nullable|string|max:255',
+            'purpose' => [
+                'required',
+                'string',
+            ],
 
-            'purpose' => 'required|string',
+            /*
+        |--------------------------------------------------------------------------
+        | Reviewer
+        |--------------------------------------------------------------------------
+        */
 
-            'reviewed_by' => 'nullable|exists:users,id',
+            'reviewed_by' => [
+                'required',
+                'exists:users,id',
 
-            'approved_by' => 'nullable|exists:users,id',
+                function ($attribute, $value, $fail) {
 
-            // Purchase Items
-            'items' => 'required|array|min:1',
+                    $selectedUser = User::with('role')->find($value);
 
-            'items.*.item_name' => 'required|string|max:255',
+                    if (!$selectedUser) {
+                        $fail('The selected reviewer does not exist.');
+                        return;
+                    }
 
-            'items.*.specification' => 'nullable|string',
+                    if ($selectedUser->role?->name !== 'Manager') {
+                        $fail(
+                            'The selected reviewer must have the Manager role.'
+                        );
+                        return;
+                    }
 
-            'items.*.unit' => 'nullable|string|max:50',
+                    if (!$selectedUser->email) {
+                        $fail(
+                            'The selected Manager does not have an email address.'
+                        );
+                    }
+                },
+            ],
 
-            'items.*.unit_cost' => 'required|numeric|min:0',
+            /*
+        |--------------------------------------------------------------------------
+        | Approver
+        |--------------------------------------------------------------------------
+        */
 
-            'items.*.quantity' => 'required|numeric|min:1',
+            'approved_by' => [
+                auth()->user()->role?->name === 'Manager'
+                    ? 'nullable'
+                    : 'required',
 
+                'nullable',
+                'exists:users,id',
+
+                function ($attribute, $value, $fail) {
+
+                    // Manager does not select ED.
+                    // Controller automatically selects ED.
+                    if (auth()->user()->role?->name === 'Manager') {
+                        return;
+                    }
+
+                    if (!$value) {
+                        return;
+                    }
+
+                    $selectedUser = User::with('role')->find($value);
+
+                    if (!$selectedUser) {
+                        $fail('The selected approver does not exist.');
+                        return;
+                    }
+
+                    if (!in_array(
+                        $selectedUser->role?->name,
+                        ['Manager', 'ED']
+                    )) {
+                        $fail(
+                            'The selected approver must be a Manager or ED.'
+                        );
+                        return;
+                    }
+
+                    if (!$selectedUser->email) {
+                        $fail(
+                            'The selected approver does not have an email address.'
+                        );
+                    }
+                },
+            ],
+
+            /*
+        |--------------------------------------------------------------------------
+        | Items
+        |--------------------------------------------------------------------------
+        */
+
+            'items' => [
+                'required',
+                'array',
+                'min:1',
+            ],
+
+            'items.*.item_name' => [
+                'required',
+                'string',
+                'max:255',
+            ],
+
+            'items.*.specification' => [
+                'nullable',
+                'string',
+            ],
+
+            'items.*.unit' => [
+                'nullable',
+                'string',
+                'max:50',
+            ],
+
+            'items.*.unit_cost' => [
+                'required',
+                'numeric',
+                'min:0',
+            ],
+
+            'items.*.quantity' => [
+                'required',
+                'numeric',
+                'min:1',
+            ],
         ]);
 
         try {
 
-            DB::transaction(function () use ($request) {
+            /*
+        |--------------------------------------------------------------------------
+        | Current User
+        |--------------------------------------------------------------------------
+        */
 
-                $lastPurchase = PurchaseRequest::orderByDesc('id')->first();
+            $currentUser = auth()->user();
+            $currentRole = $currentUser->role?->name;
+
+            /*
+        |--------------------------------------------------------------------------
+        | Initialize Approval IDs
+        |--------------------------------------------------------------------------
+        */
+
+            $reviewedBy = $request->reviewed_by;
+            $approvedBy = $request->approved_by;
+
+            /*
+        |--------------------------------------------------------------------------
+        | Manager Creates Purchase Request
+        |--------------------------------------------------------------------------
+        |
+        | Manager automatically becomes reviewer.
+        | ED automatically becomes approver.
+        |
+        */
+
+            if ($currentRole === 'Manager') {
+
+                // Manager = Reviewer
+                $reviewedBy = $currentUser->id;
+
+                /*
+            |--------------------------------------------------------------------------
+            | Find ED
+            |--------------------------------------------------------------------------
+            */
+
+                $ed = User::with('role')
+                    ->whereHas('role', function ($query) {
+                        $query->where('name', 'ED');
+                    })
+                    ->whereNotNull('email')
+                    ->where('email', '!=', '')
+                    ->orderBy('id')
+                    ->first();
+
+                if (!$ed) {
+
+                    return back()
+                        ->withInput()
+                        ->with(
+                            'error',
+                            'No ED user with a valid email address is available for approval.'
+                        );
+                }
+
+                // ED = Approver
+                $approvedBy = $ed->id;
+            }
+
+            /*
+        |--------------------------------------------------------------------------
+        | Initial Status
+        |--------------------------------------------------------------------------
+        */
+
+            $initialStatus = $currentRole === 'Manager'
+                ? 'Pending ED Approval'
+                : 'Pending Manager Approval';
+
+            /*
+        |--------------------------------------------------------------------------
+        | Save Purchase Request
+        |--------------------------------------------------------------------------
+        */
+
+            $purchaseRequest = DB::transaction(function () use (
+                $request,
+                $reviewedBy,
+                $approvedBy,
+                $initialStatus
+            ) {
+
+                /*
+            |--------------------------------------------------------------------------
+            | Generate Purchase Number
+            |--------------------------------------------------------------------------
+            */
+
+                $lastPurchase = PurchaseRequest::orderByDesc('id')
+                    ->first();
 
                 if ($lastPurchase) {
 
-                    $lastNumber = (int) substr($lastPurchase->purchase_no, -5);
+                    $lastNumber = (int) substr(
+                        $lastPurchase->purchase_no,
+                        -5
+                    );
 
                     $nextNumber = $lastNumber + 1;
                 } else {
@@ -148,39 +404,39 @@ class PurchaseRequestController extends Controller
                     $nextNumber
                 );
 
+                /*
+            |--------------------------------------------------------------------------
+            | Create Header
+            |--------------------------------------------------------------------------
+            */
 
                 $purchaseRequest = PurchaseRequest::create([
-
                     'purchase_no' => $purchaseNo,
-
                     'request_date' => $request->request_date,
-
                     'donor' => $request->donor,
-
                     'donor_code' => $request->donor_code,
-
                     'budget_line' => $request->budget_line,
-
                     'purpose' => $request->purpose,
 
                     'prepared_by' => auth()->id(),
-
-                    'reviewed_by' => $request->reviewed_by,
-
-                    'approved_by' => $request->approved_by,
+                    'reviewed_by' => $reviewedBy,
+                    'approved_by' => $approvedBy,
 
                     'grand_total' => 0,
-
-                    'status' => 'Pending Manager Approval',
-
+                    'status' => $initialStatus,
                 ]);
+
+                /*
+            |--------------------------------------------------------------------------
+            | Create Items
+            |--------------------------------------------------------------------------
+            */
 
                 $grandTotal = 0;
 
                 foreach ($request->items as $item) {
 
                     $unitCost = (float) $item['unit_cost'];
-
                     $quantity = (float) $item['quantity'];
 
                     $total = $unitCost * $quantity;
@@ -188,60 +444,221 @@ class PurchaseRequestController extends Controller
                     $grandTotal += $total;
 
                     $purchaseRequest->items()->create([
-
-                        'item_name'     => $item['item_name'],
-
+                        'item_name' => $item['item_name'],
                         'specification' => $item['specification'] ?? null,
-
-                        'unit'          => $item['unit'] ?? null,
-
-                        'unit_cost'     => $unitCost,
-
-                        'quantity'      => $quantity,
-
-                        'total'         => $total,
-
+                        'unit' => $item['unit'] ?? null,
+                        'unit_cost' => $unitCost,
+                        'quantity' => $quantity,
+                        'total' => $total,
                     ]);
                 }
 
-
+                /*
+            |--------------------------------------------------------------------------
+            | Save Grand Total
+            |--------------------------------------------------------------------------
+            */
 
                 $purchaseRequest->update([
-
                     'grand_total' => $grandTotal,
-
                 ]);
 
-
-
-                // $reviewer = User::find($purchaseRequest->reviewed_by);
-
-                // if ($reviewer && $reviewer->email) {
-                //     Mail::to($reviewer->email)
-                //         ->send(new PurchaseRequestNotification(
-                //             $purchaseRequest,
-                //             $reviewer,
-                //             'reviewer'
-                //         ));
-                // }
-
+                return $purchaseRequest;
             });
-        } catch (\Exception $e) {
+
+            /*
+        |--------------------------------------------------------------------------
+        | Reload Relationships
+        |--------------------------------------------------------------------------
+        */
+
+            $purchaseRequest->load([
+                'preparer',
+                'reviewer',
+                'approver',
+                'items',
+            ]);
+
+            /*
+        |--------------------------------------------------------------------------
+        | SEND EMAIL
+        |--------------------------------------------------------------------------
+        |
+        | IMPORTANT:
+        | Email failure should NOT delete or rollback
+        | the Purchase Request.
+        |
+        */
+
+            $emailSent = false;
+            $emailRecipient = null;
+            $emailError = null;
+
+            try {
+
+                /*
+            |--------------------------------------------------------------------------
+            | Manager Creates
+            | Email → ED
+            |--------------------------------------------------------------------------
+            */
+
+                if ($currentRole === 'Manager') {
+
+                    $recipient = $purchaseRequest->approver;
+
+                    if (!$recipient) {
+
+                        throw new \Exception(
+                            'ED approver was not found.'
+                        );
+                    }
+
+                    if (!$recipient->email) {
+
+                        throw new \Exception(
+                            'ED approver does not have an email address.'
+                        );
+                    }
+
+                    $emailRecipient = $recipient->email;
+
+                    Mail::to($recipient->email)->send(
+                        new PurchaseRequestNotification(
+                            $purchaseRequest,
+                            $recipient,
+                            'approver'
+                        )
+                    );
+
+                    $emailSent = true;
+
+                    Log::info(
+                        'Purchase Request email sent to ED.',
+                        [
+                            'purchase_request_id' => $purchaseRequest->id,
+                            'purchase_no' => $purchaseRequest->purchase_no,
+                            'recipient' => $recipient->email,
+                        ]
+                    );
+                }
+
+                /*
+            |--------------------------------------------------------------------------
+            | Staff Creates
+            | Email → Manager
+            |--------------------------------------------------------------------------
+            */ else {
+
+                    $recipient = $purchaseRequest->reviewer;
+
+                    if (!$recipient) {
+
+                        throw new \Exception(
+                            'Manager reviewer was not found.'
+                        );
+                    }
+
+                    if (!$recipient->email) {
+
+                        throw new \Exception(
+                            'Manager reviewer does not have an email address.'
+                        );
+                    }
+
+                    $emailRecipient = $recipient->email;
+
+                    Mail::to($recipient->email)->send(
+                        new PurchaseRequestNotification(
+                            $purchaseRequest,
+                            $recipient,
+                            'reviewer'
+                        )
+                    );
+
+                    $emailSent = true;
+
+                    Log::info(
+                        'Purchase Request email sent to Manager.',
+                        [
+                            'purchase_request_id' => $purchaseRequest->id,
+                            'purchase_no' => $purchaseRequest->purchase_no,
+                            'recipient' => $recipient->email,
+                        ]
+                    );
+                }
+            } catch (\Throwable $mailException) {
+
+                $emailError = $mailException->getMessage();
+
+                Log::error(
+                    'Purchase Request email failed.',
+                    [
+                        'purchase_request_id' => $purchaseRequest->id,
+                        'purchase_no' => $purchaseRequest->purchase_no,
+                        'recipient' => $emailRecipient,
+                        'error' => $mailException->getMessage(),
+                        'file' => $mailException->getFile(),
+                        'line' => $mailException->getLine(),
+                    ]
+                );
+            }
+
+            /*
+        |--------------------------------------------------------------------------
+        | Success Message
+        |--------------------------------------------------------------------------
+        */
+
+            if ($emailSent) {
+
+                $successMessage = $currentRole === 'Manager'
+                    ? 'Purchase Request created successfully. The ED has been notified by email.'
+                    : 'Purchase Request created successfully. The selected Manager has been notified by email.';
+            } else {
+
+                $successMessage = $currentRole === 'Manager'
+                    ? 'Purchase Request created successfully, but the ED email could not be sent.'
+                    : 'Purchase Request created successfully, but the Manager email could not be sent.';
+            }
+
+            /*
+        |--------------------------------------------------------------------------
+        | Redirect To Index
+        |--------------------------------------------------------------------------
+        */
+
+            return redirect()
+                ->route('purchase-requests.index')
+                ->with('success', $successMessage)
+                ->with('email_sent', $emailSent)
+                ->with('email_error', $emailError);
+        } catch (\Throwable $e) {
+
+            /*
+        |--------------------------------------------------------------------------
+        | Database / General Error
+        |--------------------------------------------------------------------------
+        */
+
+            Log::error(
+                'Purchase Request creation failed.',
+                [
+                    'user_id' => auth()->id(),
+                    'error' => $e->getMessage(),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                ]
+            );
 
             return back()
                 ->withInput()
                 ->with(
                     'error',
-                    'Failed to create Purchase Request. ' . $e->getMessage()
+                    'Failed to create Purchase Request. '
+                        . $e->getMessage()
                 );
         }
-
-        return redirect()
-            ->route('purchase-requests.index')
-            ->with(
-                'success',
-                'Purchase Request created successfully.'
-            );
     }
 
     public function show(PurchaseRequest $purchaseRequest)
@@ -516,6 +933,88 @@ class PurchaseRequestController extends Controller
     }
 
 
+    public function approve(PurchaseRequest $purchaseRequest)
+    {
+        $user = auth()->user();
+
+        $canApprove = false;
+
+        // Manager can approve if they are the selected reviewer
+        if (
+            $user->role?->name === 'Manager' &&
+            (int) $purchaseRequest->reviewed_by === (int) $user->id
+        ) {
+            $canApprove = true;
+        }
+
+        // ED can approve if they are the selected approver
+        if (
+            $user->role?->name === 'ED' &&
+            (int) $purchaseRequest->approved_by === (int) $user->id
+        ) {
+            $canApprove = true;
+        }
+
+        if (!$canApprove) {
+            abort(403, 'You are not authorized to approve this Purchase Request.');
+        }
+
+
+        $purchaseRequest->update([
+
+            'status' => 'Approval',
+
+            'reviewed_at' => $user->role?->name === 'Manager'
+                ? now()
+                : $purchaseRequest->reviewed_at,
+
+            'approved_at' => $user->role?->name === 'ED'
+                ? now()
+                : $purchaseRequest->approved_at,
+
+        ]);
+
+
+        $purchaseRequest->load([
+            'preparer',
+            'reviewer',
+            'approver',
+            'items',
+        ]);
+
+
+        $financeUsers = User::with('role')
+            ->whereHas('role', function ($query) {
+
+                $query->where('name', 'Finance');
+            })
+            ->whereNotNull('email')
+            ->get();
+
+
+        foreach ($financeUsers as $finance) {
+
+            Mail::to($finance->email)->send(
+
+                new PurchaseRequestNotification(
+                    $purchaseRequest,
+                    $finance,
+                    'finance'
+                )
+
+            );
+        }
+
+
+        return redirect()
+            ->back()
+            ->with(
+                'success',
+                'Purchase Request approved successfully. Finance has been notified.'
+            );
+    }
+
+
     public function exportPdf(PurchaseRequest $purchaseRequest)
     {
         $purchaseRequest->load([
@@ -581,6 +1080,89 @@ class PurchaseRequestController extends Controller
                 [
                     'Content-Type' => 'application/pdf',
                     'Content-Disposition' => 'inline; filename="Purchase_Request_' . $purchaseRequest->purchase_no . '.pdf"',
+                ]
+            );
+        } catch (\Throwable $e) {
+
+            return response()->json([
+                'message' => $e->getMessage(),
+                'line'    => $e->getLine(),
+                'file'    => $e->getFile(),
+            ], 500);
+        }
+    }
+
+
+    public function templatePdf()
+    {
+        $html = view(
+            'purchase-requests.template'
+        )->render();
+
+        // Remove non-breaking spaces
+        $html = str_replace("\xc2\xa0", ' ', $html);
+
+        try {
+
+            $mpdf = new Mpdf([
+                'mode' => 'utf-8',
+                'format' => 'A4',
+
+                'margin_left'   => 6,
+                'margin_right'  => 6,
+                'margin_top'    => 6,
+                'margin_bottom' => 6,
+
+                'margin_header' => 3,
+                'margin_footer' => 3,
+
+                'autoScriptToLang' => true,
+                'autoLangToFont'   => true,
+
+                'tempDir' => storage_path('app/mpdf'),
+            ]);
+
+            $mpdf->SetTitle(
+                'Purchase Request Template - FM02-04'
+            );
+
+            $mpdf->SetAuthor(
+                config('app.name')
+            );
+
+            $mpdf->SetDisplayMode('fullpage');
+
+            $logo = public_path('images/logo.png');
+
+            if (file_exists($logo)) {
+
+                $mpdf->SetWatermarkImage(
+                    $logo,
+                    0.05,
+                    [120, 100],
+                    [45, 70]
+                );
+
+                $mpdf->showWatermarkImage = true;
+            }
+
+
+            $mpdf->WriteHTML(
+                $html,
+                HTMLParserMode::DEFAULT_MODE
+            );
+
+            return response(
+                $mpdf->Output(
+                    'Purchase_Request_FM02-04_Template.pdf',
+                    \Mpdf\Output\Destination::STRING_RETURN
+                ),
+                200,
+                [
+                    'Content-Type' => 'application/pdf',
+
+                    'Content-Disposition' =>
+                    'inline; filename="Purchase_Request_FM02-04_Template.pdf"',
                 ]
             );
         } catch (\Throwable $e) {

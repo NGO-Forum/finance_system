@@ -101,6 +101,9 @@
                             </option>
 
                             @foreach ($departments as $department)
+                                @if (auth()->user()->role?->name === 'Admin' && $department->name === 'Administration')
+                                    @continue
+                                @endif
                                 <option value="{{ $department->id }}"
                                     {{ old('department_id') == $department->id ? 'selected' : '' }}>
 
@@ -128,6 +131,10 @@
                             </option>
 
                             @foreach ($roles as $role)
+                                @if (auth()->user()->role?->name === 'Admin' && $role->name === 'Admin')
+                                    @continue
+                                @endif
+
                                 <option value="{{ $role->id }}" {{ old('role_id') == $role->id ? 'selected' : '' }}>
 
                                     {{ $role->name }}

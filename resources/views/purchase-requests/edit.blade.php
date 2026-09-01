@@ -234,13 +234,6 @@
 
                     </div>
 
-                    <button type="button" id="addRow"
-                        class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white">
-
-                        + Add Item
-
-                    </button>
-
                 </div>
 
                 <div id="itemBody" class="p-6 space-y-5">
@@ -258,7 +251,7 @@
 
                                 <button type="button" class="removeRow text-red-600 hover:text-red-700">
 
-                                    Remove
+                                    <i class="fas fa-trash"></i>
 
                                 </button>
 
@@ -348,6 +341,15 @@
                     @endforeach
                 </div>
 
+                <div class="p-6 flex justify-end">
+                    <button type="button" id="addRow"
+                        class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white">
+
+                        + Add Item
+
+                    </button>
+                </div>
+
                 {{-- Purchase Summary --}}
                 <div class="border-t border-slate-200 bg-gradient-to-r from-slate-50 to-green-50 px-6 py-6 rounded-b-2xl">
 
@@ -433,6 +435,8 @@
                     <input type="hidden" name="grand_total" id="grandTotal" value="0">
 
                 </div>
+
+
                 <div class="flex justify-end gap-3 px-6 py-5">
 
                     <a href="{{ route('purchase-requests.index') }}"
@@ -467,7 +471,7 @@
 
                     <button type="button" class="removeRow text-red-600 hover:text-red-700 font-medium">
 
-                        Remove
+                         <i class="fas fa-trash"></i>
 
                     </button>
 

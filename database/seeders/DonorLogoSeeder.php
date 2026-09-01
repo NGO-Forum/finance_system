@@ -16,7 +16,7 @@ class DonorLogoSeeder extends Seeder
             ['name' => 'Australian Aid', 'logo' => 'australian_aid.jpg'],
             ['name' => 'Caritas Australia', 'logo' => 'caritas_australia.jpg'],
             ['name' => 'CEPA', 'logo' => 'CEPA.jpg'],
-            ['name' => 'Danmission', 'logo' => 'danmission.png'],
+            ['name' => 'Danmission', 'logo' => 'da.png'],
             ['name' => 'DCA', 'logo' => 'DCA.jpg'],
             ['name' => 'Global Environmental Institute (GEI)', 'logo' => 'GEI.png'],
             ['name' => 'HEKS EPER', 'logo' => 'HEKS_H_CMYK.jpg'],

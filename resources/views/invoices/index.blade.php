@@ -114,58 +114,39 @@
                         sm:flex-row
                         items-stretch
                         sm:items-center
-                        gap-2
+                        gap-6
                     ">
 
 
                     {{-- Total / Information --}}
-                    <div
-                        class="
-                            hidden
-                            md:flex
-                            items-center
-                            gap-2
-                            px-4
-                            py-2.5
-                            rounded-lg
-                            bg-gray-50
-                            border
-                            border-gray-200
-                            text-gray-600
-                            text-sm
-                        ">
-
-                        <i class="fa-solid fa-receipt text-gray-400"></i>
-
-                        <span>
-                            Invoice Management
-                        </span>
-
-                    </div>
+                    <a href="{{ route('invoices.template') }}" target="_blank"
+                        class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+                        PDF Template
+                    </a>
 
 
                     {{-- Create Button --}}
                     <a href="{{ route('invoices.create') }}"
                         class="
-                    inline-flex
-                    items-center
-                    justify-center
-                    gap-2
-                    px-5
-                    py-2.5
-                    bg-green-700
-                    hover:bg-green-800
-                    active:bg-green-900
-                    text-white
-                    rounded-lg
-                    font-semibold
-                    text-sm
-                    shadow-sm
-                    hover:shadow
-                    transition-all
-                    duration-200
-                    whitespace-nowrap
-                ">
+                            inline-flex
+                            items-center
+                            justify-center
+                            gap-2
+                            px-5
+                            py-2.5
+                            bg-green-700
+                            hover:bg-green-800
+                            active:bg-green-900
+                            text-white
+                            rounded-lg
+                            font-semibold
+                            text-sm
+                            shadow-sm
+                            hover:shadow
+                            transition-all
+                            duration-200
+                            whitespace-nowrap
+                        ">
 
                         <span
                             class="

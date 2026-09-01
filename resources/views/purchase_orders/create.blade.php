@@ -890,7 +890,7 @@
 
                     <div class="p-6">
 
-                        <textarea name="notes" rows="5" placeholder="Additional notes..."
+                        <textarea name="notes" rows="11" placeholder="Additional notes..."
                             class="w-full rounded-lg
                                border-gray-300
                                focus:border-green-500
@@ -926,15 +926,15 @@
 
 
                 {{-- Total --}}
-                <div
-                    class="bg-white rounded-xl
+                <div class="bg-white rounded-xl
                         border border-gray-200
                         shadow-sm">
 
                     <div
                         class="px-6 py-4
                             bg-green-600
-                            border-b rounded-t-xl border-green-200">
+                            border-b rounded-t-xl
+                            border-green-200">
 
                         <h2 class="font-bold text-white">
                             Order Summary
@@ -946,15 +946,18 @@
                     <div class="p-6 space-y-5">
 
 
-                        {{-- Subtotal --}}
-                        <div class="flex justify-between">
+                        {{-- ========================================================= --}}
+                        {{-- SUB TOTAL --}}
+                        {{-- ========================================================= --}}
 
-                            <span class="font-semibold
-                                     text-gray-600">
+                        <div class="flex justify-between items-center">
+
+                            <span class="font-semibold text-gray-600">
                                 Sub Total
                             </span>
 
                             <span class="font-bold">
+
                                 <span class="currency-symbol">
                                     $
                                 </span>
@@ -962,12 +965,74 @@
                                 <span id="subtotal">
                                     0.00
                                 </span>
+
                             </span>
 
                         </div>
 
 
-                        {{-- Tax --}}
+                        <div class="flex justify-between items-center">
+
+                            <label for="service_charge" class="font-semibold text-gray-600">
+
+                                Service Charge
+
+                            </label>
+
+                            <div class="flex items-center gap-2">
+
+                                <input type="number" id="service_charge" name="service_charge"
+                                    value="{{ old('service_charge') }}" min="0" step="0.01" placeholder="0"
+                                    class="w-24 rounded-md py-2
+                                        border-gray-300
+                                        text-right
+                                        focus:border-green-500
+                                        focus:ring-green-500">
+
+                                <span class="font-semibold text-gray-600">
+                                    %
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        {{-- ========================================================= --}}
+                        {{-- OTHER TAX CHARGE % --}}
+                        {{-- ========================================================= --}}
+
+                        <div class="flex justify-between items-center">
+
+                            <label for="other_tax_charge" class="font-semibold text-gray-600">
+
+                                Other Tax Charge
+
+                            </label>
+
+                            <div class="flex items-center gap-2">
+
+                                <input type="number" id="other_tax_charge" name="other_tax_charge"
+                                    value="{{ old('other_tax_charge') }}" min="0" step="0.01" placeholder="0"
+                                    class="w-24 rounded-md py-2
+                                            border-gray-300
+                                            text-right
+                                            focus:border-green-500
+                                            focus:ring-green-500">
+
+                                <span class="font-semibold text-gray-600">
+                                    %
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        {{-- ========================================================= --}}
+                        {{-- VAT --}}
+                        {{-- ========================================================= --}}
+
                         <div>
 
                             <div
@@ -975,9 +1040,10 @@
                                     justify-between
                                     items-center">
 
-                                <label class="font-semibold
-                                          text-gray-600">
-                                    VAT
+                                <label for="tax_percent" class="font-semibold text-gray-600">
+
+                                    Tax (VAT or Withholding)
+
                                 </label>
 
 
@@ -987,18 +1053,24 @@
                                         gap-2">
 
                                     <input type="number" id="tax_percent" name="tax_percent"
-                                        value="{{ old('tax_percent', 10) }}" min="0" step="0.01"
-                                        class="w-16 py-1 rounded-md
-                                           border-gray-300
-                                           text-right focus:border-green-500
-                                           focus:ring-green-500">
+                                        value="{{ old('tax_percent') }}" min="0" step="0.01" placeholder="0"
+                                        class="w-24 py-2
+                                            rounded-md
+                                            border-gray-300
+                                            text-right
+                                            focus:border-green-500
+                                            focus:ring-green-500">
 
-                                    <span>%</span>
+                                    <span class="font-semibold text-gray-600">
+                                        %
+                                    </span>
 
                                 </div>
 
                             </div>
 
+
+                            {{-- VAT Amount --}}
 
                             <div
                                 class="flex
@@ -1027,27 +1099,33 @@
                         </div>
 
 
-                        {{-- Other charges --}}
+                        {{-- ========================================================= --}}
+                        {{-- OTHER CHARGES --}}
+                        {{-- ========================================================= --}}
+
                         <div class="flex justify-between items-center">
 
-                            <label
-                                class="block
-                                      font-semibold
-                                      text-gray-600 mb-2">
+                            <label for="other_charges" class="font-semibold text-gray-600">
+
                                 Other Charges
+
                             </label>
 
                             <input type="number" id="other_charges" name="other_charges"
-                                value="{{ old('other_charges', 0) }}" min="0" step="0.01"
-                                class="w-64 rounded-md py-1
-                                   border-gray-300
-                                   focus:border-green-500
-                                   focus:ring-green-500">
+                                value="{{ old('other_charges') }}" min="0" step="0.01" placeholder="0.00"
+                                class="w-28 rounded-md py-2
+                                    border-gray-300
+                                    text-right
+                                    focus:border-green-500
+                                    focus:ring-green-500">
 
                         </div>
 
 
-                        {{-- Grand total --}}
+                        {{-- ========================================================= --}}
+                        {{-- GRAND TOTAL --}}
+                        {{-- ========================================================= --}}
+
                         <div
                             class="border-t
                                 border-gray-200
@@ -1060,15 +1138,18 @@
 
                                 <span
                                     class="text-lg
-                                         font-bold
-                                         text-gray-800">
+                                        font-bold
+                                        text-gray-800">
+
                                     Total
+
                                 </span>
+
 
                                 <span
                                     class="text-2xl
-                                         font-bold
-                                         text-green-700">
+                                        font-bold
+                                        text-green-700">
 
                                     <span class="currency-symbol">
                                         $
@@ -1286,8 +1367,8 @@
                             fill="none" viewBox="0 0 24 24" stroke="currentColor">
 
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M5 4h11l3 3v13H5V4z
-                                       M8 4v5h8V4
-                                       M8 20v-6h8v6" />
+                                                   M8 4v5h8V4
+                                                   M8 20v-6h8v6" />
 
                         </svg>
 
@@ -1305,12 +1386,6 @@
 
     </div>
 
-
-
-    {{-- ============================================================= --}}
-    {{-- JAVASCRIPT --}}
-    {{-- ============================================================= --}}
-
     <script>
         document.addEventListener('DOMContentLoaded', function() {
 
@@ -1321,6 +1396,19 @@
 
             const addItemButton =
                 document.getElementById('addItem');
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Summary Inputs
+            |--------------------------------------------------------------------------
+            */
+
+            const serviceChargeInput =
+                document.getElementById('service_charge');
+
+            const otherTaxChargeInput =
+                document.getElementById('other_tax_charge');
 
             const taxInput =
                 document.getElementById('tax_percent');
@@ -1343,8 +1431,7 @@
 
                 row.innerHTML = `
 
-            <td class="border px-3 py-3
-                       text-center item-number">
+            <td class="border px-3 py-3 text-center item-number">
                 ${itemIndex + 1}
             </td>
 
@@ -1384,7 +1471,7 @@
                 <input
                     type="text"
                     name="items[${itemIndex}][unit]"
-                    value="pcs"
+                    placeholder="pcs"
                     class="w-full rounded-md
                            border-gray-300
                            focus:border-green-500
@@ -1399,10 +1486,10 @@
                 <input
                     type="number"
                     name="items[${itemIndex}][quantity]"
-                    value="1"
                     min="0"
                     step="0.01"
                     required
+                    placeholder="0"
                     class="quantity w-full rounded-md
                            border-gray-300
                            focus:border-green-500
@@ -1417,10 +1504,10 @@
                 <input
                     type="number"
                     name="items[${itemIndex}][unit_price]"
-                    value="0"
                     min="0"
                     step="0.01"
                     required
+                    placeholder="0.00"
                     class="unit-price w-full rounded-md
                            border-gray-300
                            focus:border-green-500
@@ -1436,8 +1523,7 @@
                     type="text"
                     value="0.00"
                     readonly
-                    class="item-total w-full
-                           rounded-md
+                    class="item-total w-full rounded-md
                            border-gray-300
                            bg-green-50
                            focus:border-green-500
@@ -1447,21 +1533,21 @@
             </td>
 
 
-            <td class="border px-3 py-3
-                       text-center">
+            <td class="border px-3 py-3 text-center">
 
                 <button
                     type="button"
                     class="remove-item
-                        inline-flex items-center justify-center
-                        w-9 h-9
-                        rounded-lg
-                        bg-red-50
-                        text-red-600
-                        hover:bg-red-100
-                        hover:text-red-700
-                        transition"
-                    title="Remove Item">
+                           inline-flex items-center justify-center
+                           w-9 h-9
+                           rounded-lg
+                           bg-red-50
+                           text-red-600
+                           hover:bg-red-100
+                           hover:text-red-700
+                           transition"
+                    title="Remove Item"
+                >
 
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -1474,7 +1560,8 @@
                             stroke-linecap="round"
                             stroke-linejoin="round"
                             stroke-width="2"
-                            d="M6 18L18 6M6 6l12 12" />
+                            d="M6 18L18 6M6 6l12 12"
+                        />
 
                     </svg>
 
@@ -1507,9 +1594,11 @@
                 const removeButton =
                     event.target.closest('.remove-item');
 
+
                 if (!removeButton) {
                     return;
                 }
+
 
                 const rows =
                     itemsBody.querySelectorAll('tr');
@@ -1517,7 +1606,9 @@
 
                 if (rows.length <= 1) {
 
-                    alert('At least one item is required.');
+                    alert(
+                        'At least one item is required.'
+                    );
 
                     return;
                 }
@@ -1530,24 +1621,28 @@
 
                 updateNumbers();
 
-                calculate();
+                calculateTotals();
 
             });
 
 
             /*
             |--------------------------------------------------------------------------
-            | Update Numbers
+            | Update Item Numbers
             |--------------------------------------------------------------------------
             */
 
             function updateNumbers() {
+
                 itemsBody
                     .querySelectorAll('tr')
                     .forEach(function(row, index) {
 
                         const number =
-                            row.querySelector('.item-number');
+                            row.querySelector(
+                                '.item-number'
+                            );
+
 
                         if (number) {
 
@@ -1557,12 +1652,13 @@
                         }
 
                     });
+
             }
 
 
             /*
             |--------------------------------------------------------------------------
-            | Calculate
+            | Calculate Totals
             |--------------------------------------------------------------------------
             */
 
@@ -1570,6 +1666,12 @@
 
                 let subtotal = 0;
 
+
+                /*
+                |--------------------------------------------------------------------------
+                | Calculate Item Subtotal
+                |--------------------------------------------------------------------------
+                */
 
                 itemsBody
                     .querySelectorAll('tr')
@@ -1616,17 +1718,83 @@
 
                 /*
                 |--------------------------------------------------------------------------
-                | Tax
+                | Service Charge %
+                |--------------------------------------------------------------------------
+                */
+
+                const servicePercent =
+                    parseFloat(
+                        serviceChargeInput?.value
+                    ) || 0;
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Other Tax Charge %
+                |--------------------------------------------------------------------------
+                */
+
+                const otherTaxPercent =
+                    parseFloat(
+                        otherTaxChargeInput?.value
+                    ) || 0;
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | VAT %
                 |--------------------------------------------------------------------------
                 */
 
                 const taxPercent =
                     parseFloat(
-                        taxInput.value
+                        taxInput?.value
                     ) || 0;
 
 
-                const tax =
+                /*
+                |--------------------------------------------------------------------------
+                | Other Charges - Fixed Amount
+                |--------------------------------------------------------------------------
+                */
+
+                const otherCharges =
+                    parseFloat(
+                        otherChargesInput?.value
+                    ) || 0;
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Calculate Service Charge Amount
+                |--------------------------------------------------------------------------
+                */
+
+                const serviceAmount =
+                    subtotal *
+                    servicePercent /
+                    100;
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Calculate Other Tax Charge Amount
+                |--------------------------------------------------------------------------
+                */
+
+                const otherTaxAmount =
+                    subtotal *
+                    otherTaxPercent /
+                    100;
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Calculate VAT Amount
+                |--------------------------------------------------------------------------
+                */
+
+                const taxAmount =
                     subtotal *
                     taxPercent /
                     100;
@@ -1634,50 +1802,116 @@
 
                 /*
                 |--------------------------------------------------------------------------
-                | Other Charges
-                |--------------------------------------------------------------------------
-                */
-
-                const otherCharges =
-                    parseFloat(
-                        otherChargesInput.value
-                    ) || 0;
-
-
-                /*
-                |--------------------------------------------------------------------------
-                | Grand Total
+                | Calculate Grand Total
                 |--------------------------------------------------------------------------
                 */
 
                 const grandTotal =
                     subtotal +
-                    tax +
+                    serviceAmount +
+                    otherTaxAmount +
+                    taxAmount +
                     otherCharges;
 
 
                 /*
                 |--------------------------------------------------------------------------
-                | Display
+                | Display Sub Total
                 |--------------------------------------------------------------------------
                 */
 
-                document.getElementById(
+                const subtotalElement =
+                    document.getElementById(
                         'subtotal'
-                    ).textContent =
-                    subtotal.toFixed(2);
+                    );
 
 
-                document.getElementById(
+                if (subtotalElement) {
+
+                    subtotalElement.textContent =
+                        subtotal.toFixed(2);
+
+                }
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Display Service Charge Amount
+                |--------------------------------------------------------------------------
+                */
+
+                const serviceAmountElement =
+                    document.getElementById(
+                        'serviceChargeAmount'
+                    );
+
+
+                if (serviceAmountElement) {
+
+                    serviceAmountElement.textContent =
+                        serviceAmount.toFixed(2);
+
+                }
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Display Other Tax Charge Amount
+                |--------------------------------------------------------------------------
+                */
+
+                const otherTaxAmountElement =
+                    document.getElementById(
+                        'otherTaxChargeAmount'
+                    );
+
+
+                if (otherTaxAmountElement) {
+
+                    otherTaxAmountElement.textContent =
+                        otherTaxAmount.toFixed(2);
+
+                }
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Display VAT Amount
+                |--------------------------------------------------------------------------
+                */
+
+                const taxAmountElement =
+                    document.getElementById(
                         'taxAmount'
-                    ).textContent =
-                    tax.toFixed(2);
+                    );
 
 
-                document.getElementById(
+                if (taxAmountElement) {
+
+                    taxAmountElement.textContent =
+                        taxAmount.toFixed(2);
+
+                }
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Display Grand Total
+                |--------------------------------------------------------------------------
+                */
+
+                const grandTotalElement =
+                    document.getElementById(
                         'grandTotal'
-                    ).textContent =
-                    grandTotal.toFixed(2);
+                    );
+
+
+                if (grandTotalElement) {
+
+                    grandTotalElement.textContent =
+                        grandTotal.toFixed(2);
+
+                }
 
             }
 
@@ -1703,6 +1937,16 @@
                         event.target.classList.contains(
                             'unit-price'
                         )
+
+                        ||
+
+                        event.target.id ===
+                        'service_charge'
+
+                        ||
+
+                        event.target.id ===
+                        'other_tax_charge'
 
                         ||
 

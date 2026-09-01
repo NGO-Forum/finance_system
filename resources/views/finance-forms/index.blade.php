@@ -74,6 +74,20 @@
                         </a>
 
 
+                        <a href="{{ route('finance-forms.template') }}" target="_blank"
+                            class="inline-flex items-center gap-2 rounded-xl
+                                bg-orange-600 px-5 py-3
+                                text-sm font-semibold text-white
+                                shadow-sm transition
+                                hover:bg-orange-700 hover:shadow-lg">
+
+                            <i class="fas fa-file-excel"></i>
+
+                            Template PDF
+
+                        </a>
+
+
                         {{-- Create --}}
                         <button type="button" id="openCreateForm" aria-expanded="false" aria-controls="createFinanceMenu"
                             class="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-white px-4 text-sm font-bold text-emerald-700 shadow-sm shadow-emerald-600/10 transition hover:text-emerald-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2">
@@ -806,6 +820,15 @@
                                                         <circle cx="12" cy="12" r="2.75"
                                                             stroke-width="1.8" />
                                                     </svg>
+
+                                                </a>
+
+
+                                                {{-- PDF --}}
+                                                <a href="{{ route('finance-forms.pdf', $financeForm) }}" target="_blank"
+                                                    class="flex w-full items-center gap-3 rounded-xl text-red-600 px-4 py-3 text-sm font-semibold hover:bg-red-50">
+
+                                                    <i class="fas fa-file-pdf"></i>
 
                                                 </a>
 

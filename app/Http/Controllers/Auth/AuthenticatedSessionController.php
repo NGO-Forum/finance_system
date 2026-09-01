@@ -35,7 +35,7 @@ class AuthenticatedSessionController extends Controller
             return redirect()->route('dashboard');
         }
 
-        return redirect()->route('fund-requests.index');
+        return redirect()->route('dashboard');
     }
 
     /**
